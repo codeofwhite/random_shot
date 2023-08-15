@@ -1,3 +1,4 @@
+# 和pyqt会有窗口大小的冲突
 import sys
 import pymysql
 import mysql.connector
@@ -9,14 +10,22 @@ import config
 import gesture.gesture_funcs as ggf
 import game.game_sounds as game_sound
 import game.game_imgs as game_img
+import tk_ui.tk_login_ui as tk_login
+import tk_ui.self_profile as self_p
 from pygame.locals import *
+import tkinter as tk
+from tkinter import *
+from tkinter import messagebox
+from tkinter import ttk
+from tkinter.messagebox import *
 
 # 初始化游戏
 pg.init()
 pg.mixer.init()
-screen = pg.display.set_mode((config.WIDTH, config.HEIGHT))
+SIZE = WINDOWWIDTH, WINDOWHEIGHT = config.WIDTH, config.HEIGHT
+screen = pg.display.set_mode(size=SIZE, flags=RESIZABLE)
 pg.display.set_caption("打飞机")
-pg.display.set_icon(pg.image.load('C:/Users/zhj20/PycharmProjects/alltest1/game_make/img/player.png'))
+pg.display.set_icon(pg.image.load('C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make/img/player.png'))
 clock = pg.time.Clock()
 
 # 手势识别初始化
@@ -329,11 +338,13 @@ def new_rock():
     rocks.add(r)
 
 
-click = False
-font = pg.font.SysFont("C:/Windows/Fonts/s8514fix.fon", 32)  # 加载字体
+font = pg.font.Font("C:/Windows/Fonts/s8514fix.fon", 32)  # 加载字体
+font_zh = pg.font.Font('C:/Windows/Fonts/msyhbd.ttc', 20)
+
 
 # 游戏主界面初始化
 def draw_init():
+    click = False
     while True:
         screen.blit(game_img.init_bg_img, (-100, -250))
         draw_text(screen, '打飞机', 64, config.WIDTH / 2, config.HEIGHT / 4 - 100)
@@ -342,21 +353,24 @@ def draw_init():
         button_1_text = font.render("Free mode", True, (135, 206, 250))
         button_2_text = font.render("Help", True, (135, 206, 250))
         button_3_text = font.render("Store", True, (135, 206, 250))
+        button_4_text = font.render("Login", True, (135, 206, 250))
 
         button_1_image = game_img.btn1_img
         button_1 = pg.Rect(50, 100, 200, 50)
         screen.blit(button_1_image, button_1)
         screen.blit(button_1_text, (button_1.x + 10, button_1.y + 20))
 
-        button_2_image = game_img.btn2_img
         button_2 = pg.Rect(50, 200, 200, 50)
-        screen.blit(button_2_image, button_2)
+        screen.blit(button_1_image, button_2)
         screen.blit(button_2_text, (button_2.x + 10, button_2.y + 20))
 
-        button_3_image = game_img.btn3_img
         button_3 = pg.Rect(50, 300, 200, 50)
-        screen.blit(button_3_image, button_3)
+        screen.blit(button_1_image, button_3)
         screen.blit(button_3_text, (button_3.x + 10, button_3.y + 20))
+
+        button_4 = pg.Rect(50, 400, 200, 50)
+        screen.blit(button_1_image, button_4)
+        screen.blit(button_4_text, (button_4.x + 10, button_4.y + 20))
 
         if button_1.collidepoint((mx, my)):
             if click:
@@ -367,6 +381,11 @@ def draw_init():
         if button_3.collidepoint((mx, my)):
             if click:
                 store()
+        if button_4.collidepoint((mx, my)):
+            if click and tk_login.is_logged_in is False:
+                login()
+            elif click and tk_login.is_logged_in is True:
+                profile()
 
         click = False
 
@@ -391,6 +410,7 @@ def game_main():
     player.health = 100
     player.lives = 3
     score = 0
+
     with mp_hands.Hands(model_complexity=0, max_num_hands=2, min_detection_confidence=0.5, static_image_mode=False,
                         min_tracking_confidence=0.5) as hands:
         if not cap.isOpened():
@@ -567,7 +587,7 @@ def game_main():
                     pg.mixer.Sound.play(game_sound.time_2_sound)
                     score = int(score) * 2
 
-            screen.blit(game_img.background_img, (0, 0))  # 显示图片的方法
+            screen.blit(game_img.background_img, (0, 0))  # 显示背景图片的方法
             all_sprites.draw(screen)
             draw_text(screen, str(score), 18, config.WIDTH / 2, 10)
             draw_health(screen, player.health, 10, 10, str(player.health), 18)
@@ -595,11 +615,44 @@ def store():
     while True:
         screen.blit(game_img.store_img, (0, -200))  # 显示图片的方法
         draw_text(screen, '商店', 64, config.WIDTH / 2, config.HEIGHT / 4 - 100)
+        button_1_text = font_zh.render("增加激光数量", True, (135, 206, 250))
+        button_2_text = font_zh.render("增加子弹数量", True, (135, 206, 250))
+        button_3_text = font_zh.render("增加生命条数", True, (135, 206, 250))
+        button_4_text = font_zh.render("增加生命值上限", True, (135, 206, 250))
+
+        button_1_image = game_img.btn1_img
+        button_1 = pg.Rect(50, 100, 200, 50)
+        screen.blit(button_1_image, button_1)
+        screen.blit(button_1_text, (button_1.x + 10, button_1.y + 20))
+
+        button_2 = pg.Rect(50, 200, 200, 50)
+        screen.blit(button_1_image, button_2)
+        screen.blit(button_2_text, (button_2.x + 10, button_2.y + 20))
+
+        button_3 = pg.Rect(50, 300, 200, 50)
+        screen.blit(button_1_image, button_3)
+        screen.blit(button_3_text, (button_3.x + 10, button_3.y + 20))
+
+        button_4 = pg.Rect(50, 400, 200, 50)
+        screen.blit(button_1_image, button_4)
+        screen.blit(button_4_text, (button_4.x + 10, button_4.y + 20))
+
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return draw_init()
         pg.display.update()
         clock.tick(config.FPS)
+
+
+# 登录系统
+def login():
+    main = tk_login.My_Gui()
+    main.set_init_window()
+
+
+def profile():
+    main = self_p.User_Gui()
+    main.set_init_window()
 
 
 draw_init()
