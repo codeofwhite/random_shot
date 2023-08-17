@@ -19,6 +19,11 @@ def insertdb(db, db_data):
     cursor = db.cursor()  # 游标
     use = "use score"
     sql = "insert into scores(score_num)VALUES(%d)" % (db_data[0])
+    # cursor = conn.cursor()
+    # sql = "insert into user_base_info(user_name,user_password)VALUES(%s,%s)"
+    # cursor.execute('use user_info')
+    # cursor.execute(sql, (entry_name, entry_pass))
+    # conn.commit()
     cursor.execute(use)
     cursor.execute(sql)  # 执行sql语句
     db.commit()  # 执行成功，提交

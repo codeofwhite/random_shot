@@ -14,7 +14,7 @@ def vector_2d_angle(v1, v2):
     return angle_
 
 
-# 手指的角度
+# 手指的角度判断
 def hand_angle(hand_):
     angle_list = []
     # thumb 大拇指角度

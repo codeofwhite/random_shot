@@ -1,5 +1,6 @@
 import tkinter.messagebox
 import pymysql
+import mysql.connector
 import tkinter as tk
 from tkinter import *
 from tkinter import messagebox
@@ -8,6 +9,9 @@ from tkinter.messagebox import *
 from PIL import Image, ImageTk
 
 is_logged_in = False
+conn = pymysql.connect(host="localhost", user="root", port=3307, password="Jason20040903", database="user_info",
+                       charset="utf8")
+user_name = ""
 
 
 class My_Gui():
@@ -39,18 +43,21 @@ class My_Gui():
             y=210)
 
         user_name = tk.StringVar()
-        user_name.set('buymeacoffee@python.com')
-        entry_user_name = tk.Entry(self.main_screen, textvariable=user_name, font=('Arial', 14), relief=SUNKEN)
-        entry_user_name.place(x=200, y=175)
+        # user_name.set('buymeacoffee@python.com')
+        self.entry_user_name = tk.Entry(self.main_screen, textvariable=user_name, font=('Arial', 14), relief=SUNKEN)
+        self.entry_user_name.place(x=200, y=175)
 
         user_pw = tk.StringVar()
-        entry_user_pw = tk.Entry(self.main_screen, textvariable=user_pw, font=('Arial', 14), show='·', relief=SUNKEN)
-        entry_user_pw.place(x=200, y=215)
+        self.entry_user_pw = tk.Entry(self.main_screen, textvariable=user_pw, font=('Arial', 14), show='·',
+                                      relief=SUNKEN)
+        self.entry_user_pw.place(x=200, y=215)
 
         # 第6步，login and sign up 按钮
         btn_login = tk.Button(self.main_screen, text='登入', width=10, height=1, activebackground="RoyalBlue",
                               relief=RIDGE,
-                              bg="Cyan", command=lambda: self.login_event(entry_user_name.get(), entry_user_pw.get()))
+                              bg="Cyan",
+                              command=lambda: self.login_event(self.entry_user_name.get(), self.entry_user_pw.get(),
+                                                               canvas))
         btn_login.place(x=180, y=260)
         btn_sign_up = tk.Button(self.main_screen, text='注册', command=lambda: self.sign_up(canvas), width=10, height=1,
                                 activebackground="RoyalBlue",
@@ -78,7 +85,7 @@ class My_Gui():
         canvas.create_window(0, 0, anchor=NW)
 
         new_name = tk.StringVar()  # 将在entry输入的注册名赋值给变量
-        new_name.set('buymemorecoffee@python.com')  # 初始一个用户名放着
+        # new_name.set('buymemorecoffee@python.com')  # 初始一个用户名放着
         tk.Label(window_sign_up, width=9, height=1, text='用户名： ', font=("华文行楷", 20), relief=SUNKEN,
                  bg="Pale Turquoise").place(x=10,
                                             y=10)
@@ -107,27 +114,54 @@ class My_Gui():
                                                                         entry_user_pwd_confirm.get()))
         btn_confirm_sign_up.place(x=180, y=130)
 
-    def login_event(self, entry_name, entry_pass):
-        conn = pymysql.connect(host="localhost", user="root", port=3307, password="Jason20040903", database="user_info",
-                               charset="utf8")
+    def login_event(self, entry_name, entry_pass, canvas):
+        global user_name
+        user_name = entry_name
+        curs = conn.cursor()
+        curs.execute("use user_info")
+        curs.execute("SELECT user_name,user_password FROM user_base_info")
+        result = curs.fetchall()
+        # fetchone()返回值是单个元组, 一行记录, 如果没有结果, 那就会返回null
+        # fetchall()返回值是多个元组, 多行记录, 如果没有结果, 返回的是()
+        # assert result, "数据库无该用户信息"   # 添加断言，判断数据库有无该用户信息，没有就直接断言错误
+        user_name_list = [it[0] for it in result]
         if entry_name == "" or entry_pass == "":
             tkinter.messagebox.showwarning("提示", "请输入账号密码！")
         # 在数据库比对
+        elif entry_name in user_name_list:
+            if entry_pass == result[user_name_list.index(entry_name)][1]:
+                global is_logged_in
+                is_logged_in = True
+                tkinter.messagebox.showinfo("提示", "登入成功！")
+                self.main_screen.destroy()
+                self.main_screen.quit()
+            else:
+                tk.messagebox.showerror(title='错误', message='密码输入错误')
         else:
-            global is_logged_in
-            is_logged_in = True
-            tkinter.messagebox.showinfo("提示", "登入成功！")
-            self.main_screen.destroy()
-            self.main_screen.quit()
+            is_signup = tk.messagebox.askyesno(title='提示', message='该账号不存在，是否现在注册？')
+            if is_signup:
+                self.sign_up(canvas)
 
     def sign_event(self, entry_name, entry_pass, entry_pass_con):
+        curs = conn.cursor()
+        curs.execute("use user_info")
+        read_sql = f'''select * from user_base_info where user_name = "{entry_name}" and user_password = "{entry_pass}" '''
+        user_data = curs.execute(read_sql)
         if entry_name == "" or entry_pass == "" or entry_pass_con == "":
             tkinter.messagebox.showwarning("提示", "请输入账号密码！")
         elif entry_pass != entry_pass_con:
             tkinter.messagebox.showwarning("提示", "两次密码不一致！")
         # 在数据库比对
         else:
-            tkinter.messagebox.showinfo("提示", "注册成功！")
+            if user_data.real:
+                tk.messagebox.showwarning(title='警告', message='该注册账号已存在')
+            else:
+                tkinter.messagebox.showinfo("提示", "注册成功！")
+                cursor = conn.cursor()
+                sql = "insert into user_base_info(user_name,user_password)VALUES(%s,%s)"
+                cursor.execute('use user_info')
+                cursor.execute(sql, (entry_name, entry_pass))
+                conn.commit()
 
 
 if __name__ == '__main__':

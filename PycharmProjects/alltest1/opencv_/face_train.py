@@ -14,7 +14,7 @@ for i in range(1,28):
     img_np = np.array(gray, 'uint8')  # 轉換成指定編碼的 numpy 陣列
     face = detector.detectMultiScale(gray)  # 擷取人臉區域
     for (x, y, w, h) in face:
-        faces.append(img_np[y:y + h, x:x + w])  # 記錄蔡英文人臉的位置和大小內像素的數值
+        faces.append(img_np[y:y + h, x:x + w])  # 記錄蔡拜登人臉的位置和大小內像素的數值
         ids.append(1)  # 記錄id,id只能是整數，都是 1 表示拜登的 id 為 1
 
 print('training...')  # 提示開始訓練
