@@ -52,6 +52,8 @@ class My_Gui():
                                       relief=SUNKEN)
         self.entry_user_pw.place(x=200, y=215)
 
+        self.entry_user_name.bind("<Return>", lambda event: self.entry_user_pw.focus_set())
+
         # 第6步，login and sign up 按钮
         btn_login = tk.Button(self.main_screen, text='登入', width=10, height=1, activebackground="RoyalBlue",
                               relief=RIDGE,
@@ -59,6 +61,8 @@ class My_Gui():
                               command=lambda: self.login_event(self.entry_user_name.get(), self.entry_user_pw.get(),
                                                                canvas))
         btn_login.place(x=180, y=260)
+        self.entry_user_pw.bind("<Return>", lambda event: btn_login.invoke())
+
         btn_sign_up = tk.Button(self.main_screen, text='注册', command=lambda: self.sign_up(canvas), width=10, height=1,
                                 activebackground="RoyalBlue",
                                 relief=RIDGE, bg="Cyan")
@@ -107,12 +111,16 @@ class My_Gui():
         entry_user_pwd_confirm = tk.Entry(window_sign_up, textvariable=new_pwd_confirm, show='·', font=('Arial', 14))
         entry_user_pwd_confirm.place(x=140, y=95)
 
+        entry_new_name.bind("<Return>", lambda event: entry_user_pwd.focus_set())
+        entry_user_pwd.bind("<Return>", lambda event: entry_user_pwd_confirm.focus_set())
+
         # 注册按钮
         btn_confirm_sign_up = tk.Button(window_sign_up, text='注册', activebackground="RoyalBlue", width=7, height=1,
                                         relief=RIDGE, bg="Cyan", font=("华文行楷", 15),
                                         command=lambda: self.sign_event(entry_new_name.get(), entry_user_pwd.get(),
                                                                         entry_user_pwd_confirm.get()))
         btn_confirm_sign_up.place(x=180, y=130)
+        entry_user_pwd_confirm.bind("<Return>", lambda event: btn_confirm_sign_up.invoke())
 
     def login_event(self, entry_name, entry_pass, canvas):
         global user_name
