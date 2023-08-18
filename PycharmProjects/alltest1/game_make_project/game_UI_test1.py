@@ -604,7 +604,6 @@ def game_main():
                     pg.mixer.Sound.play(game_sound.time_2_sound)
                     score = int(score) * 2
 
-            back_group.update()
             back_group.draw(screen)
             # screen.blit(game_img.background_img, (0, 0))  # 显示背景图片的方法
             all_sprites.draw(screen)
@@ -613,6 +612,7 @@ def game_main():
             draw_lives(screen, player.lives, game_img.player_lives_img, config.WIDTH - 100, 15)
 
             # 更新画面
+            back_group.update()
             pg.display.update()
 
 
