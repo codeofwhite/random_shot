@@ -2,6 +2,7 @@
 import sys
 import pymysql
 import mysql.connector
+import tkinter as tk
 import cv2
 import mediapipe as mp
 import pygame as pg
@@ -11,8 +12,8 @@ import gesture.gesture_funcs as ggf
 import game.game_sounds as game_sound
 import game.game_imgs as game_img
 import tk_ui.tk_login_ui as tk_login
+import plane_sprite.plane_sprite as plane_sprite
 from pygame.locals import *
-import tkinter as tk
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
@@ -407,6 +408,9 @@ def draw_init():
 
 connect_ = pymysql.connect(host="localhost", user="root", port=3307, password="Jason20040903", database="user_info",
                            charset="utf8")
+bg1 = plane_sprite.BackGroud()
+bg2 = plane_sprite.BackGroud(True)
+back_group = pg.sprite.Group(bg1, bg2)
 
 
 # 游戏主体
@@ -600,7 +604,9 @@ def game_main():
                     pg.mixer.Sound.play(game_sound.time_2_sound)
                     score = int(score) * 2
 
-            screen.blit(game_img.background_img, (0, 0))  # 显示背景图片的方法
+            back_group.update()
+            back_group.draw(screen)
+            # screen.blit(game_img.background_img, (0, 0))  # 显示背景图片的方法
             all_sprites.draw(screen)
             draw_text(screen, str(score), 18, config.WIDTH / 2, 10)
             draw_health(screen, player.health, 10, 10, str(player.health), 18)
@@ -672,7 +678,6 @@ def profile():
 class User_Gui():
     def __init__(self):
         self.main_screen = tk.Tk()
-
 
     def set_init_window(self):
         self.main_screen.geometry('600x500')
