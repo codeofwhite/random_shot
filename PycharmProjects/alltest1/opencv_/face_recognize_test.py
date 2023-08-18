@@ -1,12 +1,11 @@
 # 人脸识别基础
 import cv2
 
-img = cv2.imread('C:/Users/zhj20/PycharmProjects/alltest1/images/wp1890591.jpg')
+img = cv2.imread('C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/images/wp1890591.jpg')
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # 將圖片轉成灰階
 
 face_cascade = cv2.CascadeClassifier(
-    "C:/Users/zhj20/PycharmProjects/alltest1/raw.githubusercontent."
-    "com_opencv_opencv_4.x_data_haarcascades_haarcascade_frontalface_default.xml")  # 載入人臉模型
+    "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/opencv_/raw.githubusercontent.com_opencv_opencv_4.x_data_haarcascades_haarcascade_frontalface_default.xml")  # 載入人臉模型
 faces = face_cascade.detectMultiScale(gray, scaleFactor=1.2)  # 偵測人臉
 # 偵測並取出相關屬性
 # img 來源影像，建議使用灰階影像

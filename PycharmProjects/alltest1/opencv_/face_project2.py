@@ -2,9 +2,8 @@
 import cv2
 
 recognizer = cv2.face.LBPHFaceRecognizer_create()  # 啟用訓練人臉模型方法
-recognizer.read('C:/Users/zhj20/PycharmProjects/alltest1/opencv_/face.yml')  # 讀取人臉模型檔
-cascade_path = "C:/Users/zhj20/PycharmProjects/alltest1/raw.githubusercontent.com_opencv_opencv_4.x_" \
-               "data_haarcascades_haarcascade_frontalface_default.xml"  # 載入人臉追蹤模型
+recognizer.read('C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/opencv_/face.yml')  # 讀取人臉模型檔
+cascade_path = "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/opencv_/raw.githubusercontent.com_opencv_opencv_4.x_data_haarcascades_haarcascade_frontalface_default.xml"  # 載入人臉追蹤模型
 face_cascade = cv2.CascadeClassifier(cascade_path)  # 啟用人臉追蹤
 
 cap = cv2.VideoCapture(0)  # 開啟攝影機

@@ -20,6 +20,7 @@ class My_Gui():
 
     def set_init_window(self):
         self.main_screen.geometry('600x500')
+        self.main_screen.resizable(False, False)
         self.main_screen.title('login')
 
         canvas = tk.Canvas(self.main_screen, width=1000, height=1000)
@@ -63,19 +64,21 @@ class My_Gui():
         btn_login.place(x=180, y=260)
         self.entry_user_pw.bind("<Return>", lambda event: btn_login.invoke())
 
-        btn_sign_up = tk.Button(self.main_screen, text='注册', command=lambda: self.sign_up(canvas), width=10, height=1,
+        btn_sign_up = tk.Button(self.main_screen, text='注册', command=lambda: self.sign_up(canvas, ''), width=10,
+                                height=1,
                                 activebackground="RoyalBlue",
                                 relief=RIDGE, bg="Cyan")
         btn_sign_up.place(x=300, y=260)
 
         self.main_screen.mainloop()
 
-    def sign_up(self, canvas):
+    def sign_up(self, canvas, user_name):
         # self.main_withdraw.withdraw() 直接让主页面消失
 
         # 定义长在窗口上的窗口
         window_sign_up = tk.Toplevel(self.main_screen)
         window_sign_up.geometry('450x300')
+        window_sign_up.resizable(False, False)
         window_sign_up.title('注册界面')
 
         # 在子窗口添加颜色和图片
@@ -89,7 +92,7 @@ class My_Gui():
         canvas.create_window(0, 0, anchor=NW)
 
         new_name = tk.StringVar()  # 将在entry输入的注册名赋值给变量
-        # new_name.set('buymemorecoffee@python.com')  # 初始一个用户名放着
+        new_name.set(user_name)  # 初始一个用户名放着
         tk.Label(window_sign_up, width=9, height=1, text='用户名： ', font=("华文行楷", 20), relief=SUNKEN,
                  bg="Pale Turquoise").place(x=10,
                                             y=10)
@@ -148,12 +151,12 @@ class My_Gui():
         else:
             is_signup = tk.messagebox.askyesno(title='提示', message='该账号不存在，是否现在注册？')
             if is_signup:
-                self.sign_up(canvas)
+                self.sign_up(canvas, entry_name)
 
     def sign_event(self, entry_name, entry_pass, entry_pass_con):
         curs = conn.cursor()
         curs.execute("use user_info")
-        read_sql = f'''select * from user_base_info where user_name = "{entry_name}" and user_password = "{entry_pass}" '''
+        read_sql = f'''select * from user_base_info where user_name = "{entry_name}" '''
         user_data = curs.execute(read_sql)
         if entry_name == "" or entry_pass == "" or entry_pass_con == "":
             tkinter.messagebox.showwarning("提示", "请输入账号密码！")

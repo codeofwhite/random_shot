@@ -1,6 +1,5 @@
 # 和pyqt会有窗口大小的冲突
 import sys
-import sqlite3
 import pymysql
 import mysql.connector
 import cv2
@@ -24,7 +23,7 @@ from PIL import Image, ImageTk
 pg.init()
 pg.mixer.init()
 SIZE = WINDOWWIDTH, WINDOWHEIGHT = config.WIDTH, config.HEIGHT
-screen = pg.display.set_mode(size=SIZE, flags=RESIZABLE)
+screen = pg.display.set_mode(size=SIZE)
 pg.display.set_caption("打飞机")
 pg.display.set_icon(pg.image.load('C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make/img/player.png'))
 clock = pg.time.Clock()
@@ -416,8 +415,8 @@ def game_main():
     player.lives = 3
     score = 0
 
-    with mp_hands.Hands(model_complexity=0, max_num_hands=2, min_detection_confidence=0.5, static_image_mode=False,
-                        min_tracking_confidence=0.5) as hands:
+    with mp_hands.Hands(model_complexity=0, max_num_hands=1, min_detection_confidence=0.55, static_image_mode=False,
+                        min_tracking_confidence=0.55) as hands:
         if not cap.isOpened():
             print("Cannot open camera")
             exit()
@@ -502,8 +501,12 @@ def game_main():
             clock.tick(config.FPS)
             for event in pg.event.get():
                 if event.type == pg.QUIT:
-                    cv2.destroyAllWindows()
-                    running = False
+                    quit_game = tk.messagebox.askyesno("quit", "是否确认退出游戏，您在游戏中获得的积分将消失!")
+                    if quit_game:
+                        cv2.destroyAllWindows()
+                        running = False
+                    else:
+                        pass
                 if event.type == INVINCIBLE_TIME:
                     player.invincible = False  # 取消无敌状态
                     player.image = game_img.player_img
@@ -612,7 +615,8 @@ def help_():
     while True:
         screen.fill((0, 0, 0))
         draw_text(screen, '新手教程', 64, config.WIDTH / 2, config.HEIGHT / 4 - 100)
-        draw_text(screen, '使用手掌移动飞船', 20, config.WIDTH / 2, config.HEIGHT / 4 + 100)
+        draw_text(screen, '使用手掌移动飞船\n左手握拳发射激光\n右手握拳发射子弹', 20, config.WIDTH / 2,
+                  config.HEIGHT / 4 + 100)
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return draw_init()
@@ -669,8 +673,10 @@ class User_Gui():
     def __init__(self):
         self.main_screen = tk.Tk()
 
+
     def set_init_window(self):
         self.main_screen.geometry('600x500')
+        self.main_screen.resizable(False, False)
         self.main_screen.title('user')
 
         canvas = tk.Canvas(self.main_screen, width=1000, height=1000)
@@ -683,17 +689,25 @@ class User_Gui():
         tk.Label(self.main_screen, text='欢迎回到飞机大战', font=('宋体', 20), fg="blue", bg='Light Sea Green',
                  relief=SUNKEN).place(x=200,
                                       y=20)
+        tk.Label(self.main_screen, text='用户:' + tk_login.user_name, font=('宋体', 20), fg="blue",
+                 bg='Light Sea Green',
+                 relief=SUNKEN).place(x=200,
+                                      y=50)
         cur = connect_.cursor()
         sql = "SELECT score FROM user_base_info WHERE user_name = %s"
         cur.execute(sql, (tk_login.user_name))
         row = cur.fetchone()
         score = row[0]
-        tk.Label(self.main_screen, text="您的总分数为" + str(score), font=('宋体', 20), fg="blue", bg='Light Sea Green').place(x=300, y=80)
+        tk.Label(self.main_screen, text="您的总分数为" + str(score), font=('宋体', 20), fg="blue",
+                 bg='Light Sea Green', relief=SUNKEN).place(x=200, y=80)
+
         # 设置头像，统一头像，或用户存入的头像
-        '''
-        image_user_ = Image.open()
-        image_user = ImageTk.PhotoImage(image_user)
-        '''
+        user_img = Image.open(
+            'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/user_img_100x100.jpg')
+        user_tk_img = ImageTk.PhotoImage(user_img)
+        canvas_ = tk.Canvas(self.main_screen, width=90, height=90)  # 设置头像画布的宽度和高度为100
+        canvas_.create_image(0, 0, anchor='nw', image=user_tk_img)  # 在 Canvas 中放入圖片
+        canvas_.place(x=50, y=50)  # 设置头像画布的位置为左上角
 
         # 退出按钮
         btn_quit = tk.Button(self.main_screen, text='登出', width=10, height=1, activebackground="RoyalBlue",
@@ -702,6 +716,8 @@ class User_Gui():
         btn_quit.place(x=250, y=400)
 
         self.main_screen.mainloop()
+
+        # 更换头像（选做）
 
     def quit_in(self):
         tk.messagebox.showinfo("提示", "登出成功！")
