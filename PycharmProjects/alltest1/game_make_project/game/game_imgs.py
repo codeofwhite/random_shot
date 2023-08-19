@@ -22,10 +22,7 @@ btn3_img = pg.image.load(
 btn4_img = pg.image.load(
     'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/button_type_1.png')
 
-btn1_img = pg.transform.scale(btn1_img, (170, 60))
-btn2_img = pg.transform.scale(btn2_img, (170, 60))
-btn3_img = pg.transform.scale(btn3_img, (170, 60))
-btn4_img = pg.transform.scale(btn4_img, (170, 60))
+btn1_img = pg.transform.scale(btn1_img, (265, 60))
 
 # 载入图片
 background_img = pg.image.load(

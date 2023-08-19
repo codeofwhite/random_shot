@@ -474,7 +474,7 @@ def update_game():
             create_item()
         update_boss()
         check_boss_collisions()
-        if boss_health == 0:
+        if boss_health <= 0:
             global game_over
             game_over = True
 
@@ -559,7 +559,7 @@ def use_bomb():
     # Reduce the boss health by 1000
     if level == 3:
         boss_health -= 1000
-        if boss_health < 0:
+        if boss_health <= 0:
             boss_health = 0
     # Decrement the bomb count
     bomb_count -= 1
@@ -640,7 +640,7 @@ while True:
             player_bullets_speed = 0
             item_spawn_delay = 60
             item_speed = 3
-            boss_health = 10000
+            boss_health = 1000
             spread_bullet = False
             start_game = True
             game_over = False
@@ -753,7 +753,7 @@ while True:
             player_bullets_speed = 0
             item_spawn_delay = 60
             item_speed = 3
-            boss_health = 10000
+            boss_health = 1000
             spread_bullet = False
             start_game = False
             bomb_count = 0

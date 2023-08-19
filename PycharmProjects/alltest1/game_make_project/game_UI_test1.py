@@ -77,7 +77,8 @@ class Player(pg.sprite.Sprite):
     def shoot_right(self):
         if not self.hidden:
             current_time = pg.time.get_ticks()
-            if current_time - self.last_shot_time >= 200:
+            # 设置射击间隔
+            if current_time - self.last_shot_time >= 300:
                 if self.gun == 1:
                     bullet = Bullet(self.rect.centerx, self.rect.top)
                     all_sprites.add(bullet)
@@ -95,7 +96,8 @@ class Player(pg.sprite.Sprite):
     def shoot_left(self):
         if not self.hidden:
             current_time = pg.time.get_ticks()
-            if current_time - self.last_shot_time >= 1000:
+            # 设置射击间隔
+            if current_time - self.last_shot_time >= 1500:
                 laser = Laser(self.rect.centerx, self.rect.top)
                 all_sprites.add(laser)
                 lasers.add(laser)
@@ -280,8 +282,8 @@ all_sprites = pg.sprite.Group()
 all_sprites.add(player)
 for i in range(20):
     rock = Rock()
-    all_sprites.add(rock)
     rocks.add(rock)
+    all_sprites.add(rock)
 pg.mixer.music.play(-1)
 score = 0
 
@@ -415,25 +417,16 @@ connect_ = pymysql.connect(host="localhost", user="root", port=3307, password="J
 bg1 = plane_sprite.BackGroud()
 bg2 = plane_sprite.BackGroud(True)
 back_group = pg.sprite.Group(bg1, bg2)
+odds = 0
 
 
 # 游戏主体
 def game_main():
     health = player.health
     lives = player.lives
+    player.rect.centerx = config.WIDTH / 2
+    player.rect.bottom = config.HEIGHT - 10
     score = 0
-    # 初始化对象
-    # player_ = Player()
-    # bullets_ = pg.sprite.Group()
-    # rocks_ = pg.sprite.Group()
-    # powers_ = pg.sprite.Group()
-    # lasers_ = pg.sprite.Group()
-    # all_sprites_ = pg.sprite.Group()
-    # all_sprites_.add(player_)
-    # for i in range(20):
-    #     rock_ = Rock()
-    #     all_sprites.add(rock_)
-    #     rocks.add(rock_)
 
     with mp_hands.Hands(model_complexity=0, max_num_hands=1, min_detection_confidence=0.55, static_image_mode=False,
                         min_tracking_confidence=0.55) as hands:
@@ -519,6 +512,7 @@ def game_main():
                 break  # 按下 q 鍵停止
 
             clock.tick(config.FPS)
+            # 特殊反应
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     quit_game = tk.messagebox.askyesno("quit", "是否确认退出游戏，您在游戏中获得的积分将消失!")
@@ -542,21 +536,23 @@ def game_main():
                 score += int(hit.radius)
                 expl = Exploration(hit.rect.center, 'big')
                 all_sprites.add(expl)
-                if random.random() > 0.9:
+                # 掉宝机率
+                if random.random() > 0.85 - odds:
                     pow = Power(hit.rect.center)
                     all_sprites.add(pow)
                     # powers = pg.sprite.Group() 这个地方加上去就在发射时吃不到道具了，因为创建了一个新的精灵模组，飞机只能和最后的发生互动
                     powers.add(pow)
                 new_rock()
 
-            # 子弹和激光碰撞
+            # 激光碰撞陨石
             hits = pg.sprite.groupcollide(rocks, lasers, True, False)  # 后面两个参数是判断碰撞后要不要删除;返回值是字典；默认矩形碰撞判断
             for hit in hits:
                 pg.mixer.Sound.play(random.choice(game_sound.expl_sounds))
                 score += int(hit.radius)
                 expl = Exploration(hit.rect.center, 'big')
                 all_sprites.add(expl)
-                if random.random() > 0.2:
+                # 掉宝机率
+                if random.random() > 0.85 - odds:
                     pow = Power(hit.rect.center)
                     all_sprites.add(pow)
                     # powers = pg.sprite.Group() 这个地方加上去就在发射时吃不到道具了，因为创建了一个新的精灵模组，飞机只能和最后的发生互动
@@ -650,7 +646,6 @@ def help_():
 
 
 n_1, n_2, n_3, n_4 = 0, 0, 0, 0  # n 等於 0
-
 num_font = pg.font.SysFont('Arial', 32)
 
 
@@ -670,10 +665,10 @@ def store():
         screen.blit(game_img.store_img, (0, -200))  # 显示图片的方法
         draw_text(screen, '商店', 64, config.WIDTH / 2, config.HEIGHT / 4 - 100)
         mx, my = pg.mouse.get_pos()
-        button_1_text = font_zh.render("增加激光数量", True, (135, 206, 250))
-        button_2_text = font_zh.render("增加子弹数量", True, (135, 206, 250))
-        button_3_text = font_zh.render("增加生命条数", True, (135, 206, 250))
-        button_4_text = font_zh.render("增加生命值上限", True, (135, 206, 250))
+        button_1_text = font_zh.render("增加掉落机率(max10)", True, (135, 206, 250))
+        button_2_text = font_zh.render("增加飞船移动速度(max10)", True, (135, 206, 250))
+        button_3_text = font_zh.render("增加生命条数(max3)", True, (135, 206, 250))
+        button_4_text = font_zh.render("增加生命值上限(max10)", True, (135, 206, 250))
 
         button_1_image = game_img.btn1_img
         button_1 = pg.Rect(50, 100, 200, 50)
@@ -695,9 +690,12 @@ def store():
         if button_1.collidepoint((mx, my)):
             if click:
                 n_1 += 1
+                global odds
+                odds += 0.01
         if button_2.collidepoint((mx, my)):
             if click:
                 n_2 += 1
+                player.speed += 0.1
         if button_3.collidepoint((mx, my)):
             if click:
                 n_3 += 1
