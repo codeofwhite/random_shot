@@ -40,7 +40,7 @@ INVINCIBLE_TIME = pg.USEREVENT + 2
 class Player(pg.sprite.Sprite):
     def __init__(self):
         pg.sprite.Sprite.__init__(self)
-        self.image = game_img.player_img
+        self.image = game_img.chapter2_player_img
         self.rect = self.image.get_rect()  # 外面的框
         self.radius = 20
         # pg.draw.circle(self.image, RED, self.rect.center, self.radius)
@@ -342,90 +342,22 @@ def new_rock():
 font = pg.font.Font("C:/Windows/Fonts/s8514fix.fon", 32)  # 加载字体
 font_zh = pg.font.Font('C:/Windows/Fonts/msyhbd.ttc', 20)
 
-
 # 游戏主界面初始化
-def draw_init():
-    click = False
-    while True:
-        screen.blit(game_img.init_bg_img, (-100, -250))
-        draw_text(screen, '打飞机', 64, config.WIDTH / 2, config.HEIGHT / 4 - 100)
-        mx, my = pg.mouse.get_pos()
-
-        button_1_text = font.render("Free mode", True, (135, 206, 250))
-        button_2_text = font.render("Help", True, (135, 206, 250))
-        button_3_text = font.render("Store", True, (135, 206, 250))
-        button_4_text = font.render("Login", True, (135, 206, 250))
-        button_5_text = font.render("PVE MODE", True, (135, 206, 250))
-
-        button_1_image = game_img.btn1_img
-        button_1 = pg.Rect(50, 100, 200, 50)
-        screen.blit(button_1_image, button_1)
-        screen.blit(button_1_text, (button_1.x + 10, button_1.y + 20))
-
-        button_2 = pg.Rect(50, 300, 200, 50)
-        screen.blit(button_1_image, button_2)
-        screen.blit(button_2_text, (button_2.x + 10, button_2.y + 20))
-
-        button_3 = pg.Rect(50, 400, 200, 50)
-        screen.blit(button_1_image, button_3)
-        screen.blit(button_3_text, (button_3.x + 10, button_3.y + 20))
-
-        button_4 = pg.Rect(50, 500, 200, 50)
-        screen.blit(button_1_image, button_4)
-        screen.blit(button_4_text, (button_4.x + 10, button_4.y + 20))
-
-        button_5 = pg.Rect(50, 200, 200, 50)
-        screen.blit(button_1_image, button_5)
-        screen.blit(button_5_text, (button_5.x + 10, button_5.y + 20))
-
-        if button_1.collidepoint((mx, my)):
-            if click:
-                game_main()
-        if button_2.collidepoint((mx, my)):
-            if click:
-                help_()
-        if button_3.collidepoint((mx, my)):
-            if click:
-                store()
-        if button_4.collidepoint((mx, my)):
-            if click and tk_login.is_logged_in is False:
-                login()
-            elif click and tk_login.is_logged_in is True:
-                profile()
-        if button_5.collidepoint((mx, my)):
-            if click:
-                pass
-        click = False
-
-        # 取得输入
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                pg.quit()
-                sys.exit()
-            if event.type == pg.KEYDOWN:
-                if event.key == pg.K_ESCAPE:
-                    pg.quit()
-                    sys.exit()
-            if event.type == MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    click = True
-        pg.display.update()
-        clock.tick(config.FPS)
 
 
 connect_ = pymysql.connect(host="localhost", user="root", port=3307, password="Jason20040903", database="user_info",
                            charset="utf8")
 bg1 = plane_sprite.BackGroud(False,
-                             "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make/img/background.png")
+                             "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/chapter2_bg.jpg")
 bg2 = plane_sprite.BackGroud(True,
-                             "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make/img/background.png")
+                             "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/chapter2_bg.jpg")
 back_group = pg.sprite.Group(bg1, bg2)
 odds = 0
 highest_score = 0
 
 
 # 游戏主体
-def game_main():
+def main_game():
     health = player.health
     lives = player.lives
     player.rect.centerx = config.WIDTH / 2
@@ -587,7 +519,6 @@ def game_main():
                 cursor.execute(sql_take, (tk_login.user_name))
                 row = cursor.fetchone()
                 table_highest_score = row[0]
-                global highest_score
                 if table_highest_score < score:
                     highest_score = score
                 sql_record = "UPDATE user_base_info SET highest_record = %s WHERE user_name = %s"
@@ -605,11 +536,11 @@ def game_main():
                         if event.type == pg.KEYUP:  # 如果检测到用户按下任意键
                             waiting = False  # 结束等待循环
                             cv2.destroyAllWindows()
-                            return  # 跳出game_main函数
+                            # return  # 跳出game_main函数
                         if event.type == pg.QUIT:
                             cv2.destroyAllWindows()
                             running = False
-                            return
+                            # return
 
             # 飞机和宝物碰撞
             hits = pg.sprite.spritecollide(player, powers, True)
@@ -644,168 +575,8 @@ def game_main():
             pg.display.update()
 
 
-# 游戏帮助说明
-def help_():
-    while True:
-        screen.blit(game_img.help_bg, (0, -200))  # 显示图片的方法
-        draw_text(screen, '新手教程', 64, config.WIDTH / 2, config.HEIGHT / 4 - 100)
-        draw_text(screen, '使用手掌移动飞船\n左手握拳发射激光\n右手握拳发射子弹', 26, config.WIDTH / 2,
-                  config.HEIGHT / 4 + 100)
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                return draw_init()
-        pg.display.update()
-        clock.tick(config.FPS)
-
-
-n_1, n_2, n_3, n_4 = 0, 0, 0, 0  # n 等於 0
-num_font = pg.font.SysFont('Arial', 32)
-
-
-# 定义一个函数来绘制数字在屏幕上
-def draw_num(screen, num, x, y):
-    # 渲染数字为文字图片
-    num_text = num_font.render("Level:" + str(num), True, (255, 0, 0), (0, 0, 0))
-    # 绘制文字图片到屏幕上
-    screen.blit(num_text, (x, y))
-
-
-# 商店系统
-def store():
-    click = False
-    while True:
-        global n_1, n_2, n_3, n_4
-        screen.blit(game_img.store_img, (0, -200))  # 显示图片的方法
-        draw_text(screen, '商店', 64, config.WIDTH / 2, config.HEIGHT / 4 - 100)
-        mx, my = pg.mouse.get_pos()
-        button_1_text = font_zh.render("增加掉落机率(max10)", True, (135, 206, 250))
-        button_2_text = font_zh.render("增加飞船移动速度(max10)", True, (135, 206, 250))
-        button_3_text = font_zh.render("增加生命条数(max3)", True, (135, 206, 250))
-        button_4_text = font_zh.render("增加生命值上限(max10)", True, (135, 206, 250))
-
-        button_1_image = game_img.btn1_img
-        button_1 = pg.Rect(50, 110, 200, 50)
-        screen.blit(button_1_image, button_1)
-        screen.blit(button_1_text, (button_1.x + 10, button_1.y + 20))
-
-        button_2 = pg.Rect(50, 210, 200, 50)
-        screen.blit(button_1_image, button_2)
-        screen.blit(button_2_text, (button_2.x + 10, button_2.y + 20))
-
-        button_3 = pg.Rect(50, 310, 200, 50)
-        screen.blit(button_1_image, button_3)
-        screen.blit(button_3_text, (button_3.x + 10, button_3.y + 20))
-
-        button_4 = pg.Rect(50, 410, 200, 50)
-        screen.blit(button_1_image, button_4)
-        screen.blit(button_4_text, (button_4.x + 10, button_4.y + 20))
-
-        if button_1.collidepoint((mx, my)):
-            if click:
-                n_1 += 1
-                global odds
-                odds += 0.01
-        if button_2.collidepoint((mx, my)):
-            if click:
-                n_2 += 1
-                player.speed += 0.1
-        if button_3.collidepoint((mx, my)):
-            if click:
-                n_3 += 1
-                player.lives += 1
-        if button_4.collidepoint((mx, my)):
-            if click:
-                n_4 += 1
-                player.health += 10
-        click = False
-
-        draw_num(screen, n_1, 400, 120)
-        draw_num(screen, n_2, 400, 220)
-        draw_num(screen, n_3, 400, 320)
-        draw_num(screen, n_4, 400, 420)
-
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                return draw_init()
-            if event.type == MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    click = True
-        pg.display.update()
-        clock.tick(config.FPS)
-
-
-# 登录系统
-def login():
-    main = tk_login.My_Gui()
-    main.set_init_window()
-
-
-def profile():
-    main = User_Gui()
-    main.set_init_window()
-
-
-class User_Gui():
-    def __init__(self):
-        self.main_screen = tk.Tk()
-
-    def set_init_window(self):
-        self.main_screen.geometry('600x500')
-        self.main_screen.resizable(False, False)
-        self.main_screen.title('user')
-
-        canvas = tk.Canvas(self.main_screen, width=1000, height=1000)
-        # 图片
-        image_ = Image.open(
-            'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/login_bg.gif')
-        image_bg = ImageTk.PhotoImage(image_)
-        image = canvas.create_image(100, 0, anchor='n', image=image_bg)
-        canvas.pack()
-        tk.Label(self.main_screen, text='欢迎回到飞机大战', font=('宋体', 20), fg="blue", bg='Light Sea Green',
-                 relief=SUNKEN).place(x=200,
-                                      y=20)
-        tk.Label(self.main_screen, text='用户:' + tk_login.user_name, font=('宋体', 20), fg="blue",
-                 bg='Light Sea Green',
-                 relief=SUNKEN).place(x=200,
-                                      y=50)
-        # 用户获得的总分
-        cur = connect_.cursor()
-        sql = "SELECT score,highest_record FROM user_base_info WHERE user_name = %s"
-        cur.execute(sql, (tk_login.user_name))
-        row = cur.fetchone()
-        score = row[0]
-        ht_score = row[1]
-        tk.Label(self.main_screen, text="您的总分数为：" + str(score) + "\n您的最高得分为：" + str(ht_score),
-                 font=('宋体', 20), fg="blue",
-                 bg='Light Sea Green', relief=SUNKEN).place(x=200, y=80)
-
-        # 设置头像，统一头像，或用户存入的头像
-        user_img = Image.open(
-            'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/user_img_100x100.jpg')
-        user_tk_img = ImageTk.PhotoImage(user_img)
-        canvas_ = tk.Canvas(self.main_screen, width=90, height=90)  # 设置头像画布的宽度和高度为100
-        canvas_.create_image(0, 0, anchor='nw', image=user_tk_img)  # 在 Canvas 中放入圖片
-        canvas_.place(x=50, y=50)  # 设置头像画布的位置为左上角
-
-        # 退出按钮
-        btn_quit = tk.Button(self.main_screen, text='登出', width=10, height=1, activebackground="RoyalBlue",
-                             relief=RIDGE, command=lambda: self.quit_in(),
-                             bg="Cyan")
-        btn_quit.place(x=250, y=400)
-
-        self.main_screen.mainloop()
-
-        # 更换头像（选做）
-
-    def quit_in(self):
-        tk.messagebox.showinfo("提示", "登出成功！")
-        self.main_screen.destroy()
-        self.main_screen.quit()
-        tk_login.is_logged_in = False
-
-
-# 运行
-draw_init()
+if __name__ == '__main__':
+    main_game()
 
 # 退出
 pg.quit()

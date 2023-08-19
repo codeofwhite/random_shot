@@ -13,15 +13,10 @@ pg.init()
 pg.mixer.init()
 screen = pg.display.set_mode((WIDTH, HEIGHT))
 
+# chapter_1
+# 按钮们
 btn1_img = pg.image.load(
     'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/button_type_1.png')
-btn2_img = pg.image.load(
-    'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/button_type_1.png')
-btn3_img = pg.image.load(
-    'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/button_type_1.png')
-btn4_img = pg.image.load(
-    'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/button_type_1.png')
-
 btn1_img = pg.transform.scale(btn1_img, (265, 60))
 
 # 载入图片
@@ -32,10 +27,18 @@ init_bg_img = pg.image.load(
 store_img = pg.image.load(
     'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/OIG.wnRZ6M1r58iBqxJV7.1b.jpg')
 store_img = pg.transform.scale(store_img, (800, 800))
+help_bg = pg.image.load(
+    "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/help_bg.jpg"
+)
+
 player_img = pg.image.load(
     'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make/img/player.png').convert()
 player_img.set_colorkey(BLACK)
 player_img = pg.transform.scale(player_img, (50, 38))
+chapter2_player_img = pg.image.load(
+    "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/chapter2_player_img_99x99.png")
+chapter2_player_img.set_colorkey(BLACK)
+chapter2_player_img = pg.transform.scale(chapter2_player_img, (70, 58))
 
 player_inv = pg.image.load(
     'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/player_inv.png').convert()
@@ -47,20 +50,27 @@ player_time = pg.image.load(
 player_time.set_colorkey(BLACK)
 player_time = pg.transform.scale(player_time, (50, 38))
 
+# 双枪
 player_gunup = pg.image.load(
     'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/player_gunup.png').convert()
 player_gunup.set_colorkey(BLACK)
 player_gunup = pg.transform.scale(player_gunup, (50, 38))
 
+# 陨石
 rock_img = pg.image.load('C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make/img/rock.png').convert()
 rock_img.set_colorkey(BLACK)
+
+# 普通子弹
 bullet_img = pg.image.load(
     'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make/img/bullet.png').convert()
 bullet_img.set_colorkey(BLACK)
+
+# 镭射
 laser_img = pg.image.load(
     'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/OIG.Xq_pdFx8_rCRKTlbXZzh-removebg-preview.png').convert()
 laser_img = pg.transform.scale(laser_img, (100, 580))
 laser_img.set_colorkey(BLACK)
+
 rock_imgs = []
 for i in range(7):
     rock_imgs.append(
@@ -103,3 +113,5 @@ power_imgs['time'] = pg.transform.scale(pg.image.load(
 power_imgs['time2'] = pg.transform.scale(pg.image.load(
     'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/time2.png'),
     (40, 40))
+
+# chapter_2

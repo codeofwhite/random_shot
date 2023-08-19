@@ -93,6 +93,7 @@ items = []
 clock = pygame.time.Clock()
 
 
+# 道具
 def create_item():
     # Create a new item sprite
     item_type = random.choice(item_types)

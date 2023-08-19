@@ -1,1 +1,1 @@
-from .config import WIDTH, WHITE, HEIGHT, RED, BLACK, FPS, GREEN, YELLOW
+from .config import *

@@ -23,10 +23,10 @@ class GameSprite(pygame.sprite.Sprite):
 class BackGroud(GameSprite):
     """游戏背景"""
 
-    def __init__(self, is_alt=False):
+    def __init__(self, is_alt=False, url=None):
         # is_alt区分时第一张图像还是第二张
         # 1.调用父类党法完成基本设置
-        super().__init__("C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make/img/background.png")
+        super().__init__(url)
         # 2.判断是否时交替图像，如果是，需要设置初始位置
         if is_alt:
             self.rect.y = -self.rect.height
