@@ -169,9 +169,9 @@ class My_Gui():
             else:
                 tkinter.messagebox.showinfo("提示", "注册成功！")
                 cursor = conn.cursor()
-                sql = "insert into user_base_info(user_name,user_password)VALUES(%s,%s)"
+                sql = "insert into user_base_info(user_name,user_password,score,highest_record)VALUES(%s,%s,%s,%s)"
                 cursor.execute('use user_info')
-                cursor.execute(sql, (entry_name, entry_pass))
+                cursor.execute(sql, (entry_name, entry_pass, 0, 0))
                 conn.commit()
 
 

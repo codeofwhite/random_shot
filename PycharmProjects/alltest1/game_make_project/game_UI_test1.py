@@ -418,6 +418,7 @@ bg1 = plane_sprite.BackGroud()
 bg2 = plane_sprite.BackGroud(True)
 back_group = pg.sprite.Group(bg1, bg2)
 odds = 0
+highest_score = 0
 
 
 # 游戏主体
@@ -578,9 +579,18 @@ def game_main():
                     player.hide()
             if lives == 0 and not (death.alive()):
                 cursor = connect_.cursor()
-                sql = "UPDATE user_base_info SET score = score + %s WHERE user_name = %s"
                 cursor.execute('use user_info')
-                cursor.execute(sql, (score, tk_login.user_name))
+                sql_take = "SELECT highest_record FROM user_base_info WHERE user_name = %s"
+                cursor.execute(sql_take, (tk_login.user_name))
+                row = cursor.fetchone()
+                table_highest_score = row[0]
+                global highest_score
+                if table_highest_score < score:
+                    highest_score = score
+                sql_record = "UPDATE user_base_info SET highest_record = %s WHERE user_name = %s"
+                cursor.execute(sql_record, (highest_score, tk_login.user_name))
+                sql_in = "UPDATE user_base_info SET score = score + %s WHERE user_name = %s"
+                cursor.execute(sql_in, (score, tk_login.user_name))
                 connect_.commit()
                 draw_text(screen, '你失败了', 26, config.WIDTH / 2, 50)
                 draw_text(screen, '按任意键继续', 26, config.WIDTH / 2, 100)
@@ -755,12 +765,15 @@ class User_Gui():
                  bg='Light Sea Green',
                  relief=SUNKEN).place(x=200,
                                       y=50)
+        # 用户获得的总分
         cur = connect_.cursor()
-        sql = "SELECT score FROM user_base_info WHERE user_name = %s"
+        sql = "SELECT score,highest_record FROM user_base_info WHERE user_name = %s"
         cur.execute(sql, (tk_login.user_name))
         row = cur.fetchone()
         score = row[0]
-        tk.Label(self.main_screen, text="您的总分数为" + str(score), font=('宋体', 20), fg="blue",
+        ht_score = row[1]
+        tk.Label(self.main_screen, text="您的总分数为：" + str(score) + "\n您的最高得分为：" + str(ht_score),
+                 font=('宋体', 20), fg="blue",
                  bg='Light Sea Green', relief=SUNKEN).place(x=200, y=80)
 
         # 设置头像，统一头像，或用户存入的头像
