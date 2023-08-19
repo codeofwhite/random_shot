@@ -1,7 +1,6 @@
 # 和pyqt会有窗口大小的冲突
 import sys
 import pymysql
-import mysql.connector
 import tkinter as tk
 import cv2
 import mediapipe as mp
@@ -16,8 +15,6 @@ import plane_sprite.plane_sprite as plane_sprite
 from pygame.locals import *
 from tkinter import *
 from tkinter import messagebox
-from tkinter import ttk
-from tkinter.messagebox import *
 from PIL import Image, ImageTk
 
 # 初始化游戏
@@ -308,9 +305,9 @@ def draw_text(surf, text, size, x, y):
 def draw_health(surf, hp, x, y, text, size):
     if hp <= 0:
         hp = 0
-    BAR_LENGTH = 100
+    BAR_LENGTH = hp
     BAR_HEIGHT = 20
-    fill = hp / 100 * BAR_LENGTH
+    fill = hp
     outline_rect = pg.Rect(x, y, BAR_LENGTH, BAR_HEIGHT)
     fill_rect = pg.Rect(x, y, fill, BAR_HEIGHT)
     pg.draw.rect(surf, config.RED, fill_rect)  # 血条
@@ -355,23 +352,28 @@ def draw_init():
         button_2_text = font.render("Help", True, (135, 206, 250))
         button_3_text = font.render("Store", True, (135, 206, 250))
         button_4_text = font.render("Login", True, (135, 206, 250))
+        button_5_text = font.render("PVE MODE", True, (135, 206, 250))
 
         button_1_image = game_img.btn1_img
         button_1 = pg.Rect(50, 100, 200, 50)
         screen.blit(button_1_image, button_1)
         screen.blit(button_1_text, (button_1.x + 10, button_1.y + 20))
 
-        button_2 = pg.Rect(50, 200, 200, 50)
+        button_2 = pg.Rect(50, 300, 200, 50)
         screen.blit(button_1_image, button_2)
         screen.blit(button_2_text, (button_2.x + 10, button_2.y + 20))
 
-        button_3 = pg.Rect(50, 300, 200, 50)
+        button_3 = pg.Rect(50, 400, 200, 50)
         screen.blit(button_1_image, button_3)
         screen.blit(button_3_text, (button_3.x + 10, button_3.y + 20))
 
-        button_4 = pg.Rect(50, 400, 200, 50)
+        button_4 = pg.Rect(50, 500, 200, 50)
         screen.blit(button_1_image, button_4)
         screen.blit(button_4_text, (button_4.x + 10, button_4.y + 20))
+
+        button_5 = pg.Rect(50, 200, 200, 50)
+        screen.blit(button_1_image, button_5)
+        screen.blit(button_5_text, (button_5.x + 10, button_5.y + 20))
 
         if button_1.collidepoint((mx, my)):
             if click:
@@ -387,7 +389,9 @@ def draw_init():
                 login()
             elif click and tk_login.is_logged_in is True:
                 profile()
-
+        if button_5.collidepoint((mx, my)):
+            if click:
+                pass
         click = False
 
         # 取得输入
@@ -415,9 +419,21 @@ back_group = pg.sprite.Group(bg1, bg2)
 
 # 游戏主体
 def game_main():
-    player.health = 100
-    player.lives = 3
+    health = player.health
+    lives = player.lives
     score = 0
+    # 初始化对象
+    # player_ = Player()
+    # bullets_ = pg.sprite.Group()
+    # rocks_ = pg.sprite.Group()
+    # powers_ = pg.sprite.Group()
+    # lasers_ = pg.sprite.Group()
+    # all_sprites_ = pg.sprite.Group()
+    # all_sprites_.add(player_)
+    # for i in range(20):
+    #     rock_ = Rock()
+    #     all_sprites.add(rock_)
+    #     rocks.add(rock_)
 
     with mp_hands.Hands(model_complexity=0, max_num_hands=1, min_detection_confidence=0.55, static_image_mode=False,
                         min_tracking_confidence=0.55) as hands:
@@ -553,18 +569,18 @@ def game_main():
                 expl = Exploration(hit.rect.center, 'small')
                 all_sprites.add(expl)
                 if not player.invincible:
-                    player.health -= int(hit.radius)
+                    health -= int(hit.radius)
                 # print(player.health)
                 new_rock()
-                if player.health <= 0:
+                if health <= 0:
                     death = Death(player.rect.center)
                     pg.mixer.Sound.play(game_sound.die_sound)
                     all_sprites.add(death)
-                    player.health = 100
-                    player.lives -= 1
+                    health = player.health
+                    lives -= 1
                     # print(player.lives)
                     player.hide()
-            if player.lives == 0 and not (death.alive()):
+            if lives == 0 and not (death.alive()):
                 cursor = connect_.cursor()
                 sql = "UPDATE user_base_info SET score = score + %s WHERE user_name = %s"
                 cursor.execute('use user_info')
@@ -591,9 +607,9 @@ def game_main():
             for hit in hits:
                 if hit.type == 'shield':
                     pg.mixer.Sound.play(game_sound.shield_sound)
-                    player.health += 10
-                    if player.health >= 100:
-                        player.health = 100
+                    health += 10
+                    if health >= player.health:
+                        health = player.health
                 if hit.type == 'gun':
                     pg.mixer.Sound.play(game_sound.gun_sound)
                     player.gunup()
@@ -608,8 +624,11 @@ def game_main():
             # screen.blit(game_img.background_img, (0, 0))  # 显示背景图片的方法
             all_sprites.draw(screen)
             draw_text(screen, str(score), 18, config.WIDTH / 2, 10)
-            draw_health(screen, player.health, 10, 10, str(player.health), 18)
-            draw_lives(screen, player.lives, game_img.player_lives_img, config.WIDTH - 100, 15)
+            draw_health(screen, health, 10, 10, str(health), 18)
+            if lives <= 3:
+                draw_lives(screen, lives, game_img.player_lives_img, config.WIDTH - 100, 15)
+            else:
+                draw_lives(screen, lives, game_img.player_lives_img, config.WIDTH - 180, 15)
 
             # 更新画面
             back_group.update()
@@ -630,11 +649,27 @@ def help_():
         clock.tick(config.FPS)
 
 
+n_1, n_2, n_3, n_4 = 0, 0, 0, 0  # n 等於 0
+
+num_font = pg.font.SysFont('Arial', 32)
+
+
+# 定义一个函数来绘制数字在屏幕上
+def draw_num(screen, num, x, y):
+    # 渲染数字为文字图片
+    num_text = num_font.render("Level:" + str(num), True, (255, 0, 0), (0, 0, 0))
+    # 绘制文字图片到屏幕上
+    screen.blit(num_text, (x, y))
+
+
 # 商店系统
 def store():
+    click = False
     while True:
+        global n_1, n_2, n_3, n_4
         screen.blit(game_img.store_img, (0, -200))  # 显示图片的方法
         draw_text(screen, '商店', 64, config.WIDTH / 2, config.HEIGHT / 4 - 100)
+        mx, my = pg.mouse.get_pos()
         button_1_text = font_zh.render("增加激光数量", True, (135, 206, 250))
         button_2_text = font_zh.render("增加子弹数量", True, (135, 206, 250))
         button_3_text = font_zh.render("增加生命条数", True, (135, 206, 250))
@@ -657,9 +692,33 @@ def store():
         screen.blit(button_1_image, button_4)
         screen.blit(button_4_text, (button_4.x + 10, button_4.y + 20))
 
+        if button_1.collidepoint((mx, my)):
+            if click:
+                n_1 += 1
+        if button_2.collidepoint((mx, my)):
+            if click:
+                n_2 += 1
+        if button_3.collidepoint((mx, my)):
+            if click:
+                n_3 += 1
+                player.lives += 1
+        if button_4.collidepoint((mx, my)):
+            if click:
+                n_4 += 1
+                player.health += 10
+        click = False
+
+        draw_num(screen, n_1, 400, 100)
+        draw_num(screen, n_2, 400, 200)
+        draw_num(screen, n_3, 400, 300)
+        draw_num(screen, n_4, 400, 400)
+
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return draw_init()
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
         pg.display.update()
         clock.tick(config.FPS)
 
@@ -731,6 +790,7 @@ class User_Gui():
         tk_login.is_logged_in = False
 
 
+# 运行
 draw_init()
 
 # 退出
