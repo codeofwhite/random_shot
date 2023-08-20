@@ -47,6 +47,14 @@ blue = (0, 0, 255)
 green = (0, 255, 0)
 yellow = (0, 255, 255)
 
+# Define enemy properties
+enemy_width = 70
+enemy_height = 70
+enemy_speed = 3
+enemy_spawn_delay = 60
+enemy_bullet_speed = 5
+enemy_fire_delay = 60
+
 # Set up game clock
 clock = pygame.time.Clock()
 
@@ -64,6 +72,18 @@ boss_bullet_speed = 10
 boss_laser_delay = 240
 laser_speed = 3
 
+# Define bullet properties
+bullet_width = 20
+bullet_height = 35
+bullet_speed = 10
+
+# Create lists for bullets and enemies
+player_bullets = []
+enemies = []
+enemy_bullets = []
+boss_lasers = []
+items = []
+
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -74,11 +94,6 @@ class Player(pygame.sprite.Sprite):
         self.lives = 3
         self.health = 100
         self.player_invisible = False
-        self.player_width = 70
-        self.player_height = 70
-        self.player_x = window_width / 2 - self.player_width / 2
-        self.player_y = window_height - self.player_height - 10
-        self.player_sprite = pygame.Rect(self.player_x, self.player_y, self.player_width, self.player_height)
 
     def update(self):
         if self.rect.right > window_width:
@@ -179,6 +194,14 @@ def create_boss():
     boss_bullet_speed = 10
 
 
+def create_boss_bullet():
+    # Create a new boss bullet sprite
+    bullet_x = boss_sprite.centerx - bullet_width / 2
+    bullet_y = boss_sprite.bottom
+    bullet_sprite = pygame.Rect(bullet_x, bullet_y, bullet_width, bullet_height)
+    enemy_bullets.append(bullet_sprite)
+
+
 def update_boss():
     global boss_sprite, boss_health, boss_attack_delay, boss_bullet_speed, game_over
     if boss_health > 0:
@@ -207,7 +230,8 @@ def update_boss():
     #     boss_laser_delay = 240
 
     if not player.player_invisible:
-        if player.player_sprite.colliderect(boss_sprite):
+        if player.rect.colliderect(boss_sprite):
+            print('boom')
             # Move the boss away from the player
             if boss_sprite.centerx <= player.rect.centerx:
                 boss_sprite.move_ip(-10, 0)
@@ -217,18 +241,16 @@ def update_boss():
                 boss_sprite.move_ip(0, -10)
             else:
                 boss_sprite.move_ip(0, 10)
+            player.lives -= 1
+            if player.lives == 0:
+                game_over = True
+            else:
+                pass
+            # Make the player briefly invisible if they have just lost a life
+            # player_invisible = True
+            # player_invisible_delay = player_invisible_delay_time
+            # player_sprite.bottom = -100
 
-
-#         global player_lives
-#         player_lives -= 1
-#         if player_lives == 0:
-#             game_over = True
-#         else:
-#             # Make the player briefly invisible if they have just lost a life
-#
-#             player_invisible = True
-#             player_invisible_delay = player_invisible_delay_time
-#             # player_sprite.bottom = -100
 
 # for laser in boss_lasers:
 #     laser.move_ip(0, laser_speed)
@@ -280,7 +302,7 @@ fontFace = cv2.FONT_HERSHEY_SIMPLEX
 lineType = cv2.LINE_AA
 
 
-def game_start():
+def game_open():
     with mp_hands.Hands(model_complexity=0, max_num_hands=1, min_detection_confidence=0.55, static_image_mode=False,
                         min_tracking_confidence=0.55) as hands:
         if not cap.isOpened():
@@ -366,7 +388,8 @@ def game_start():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     cv2.destroyAllWindows()
-                    return
+                    pygame.quit()
+                    sys.exit()
 
             background_position[1] += 1
             if background_position[1] > 0:
@@ -382,5 +405,4 @@ def game_start():
             clock.tick(144)
 
 
-if __name__ == '__main__':
-    game_start()
+game_open()

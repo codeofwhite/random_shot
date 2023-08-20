@@ -808,6 +808,9 @@ class User_Gui():
 
 
 # chapter2
+game_window = pg.display.set_mode(SIZE)
+pg.display.set_caption("chapter2")
+
 player_image = pg.image.load(
     "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/chapter_2_img/game_sprite/player.png")
 boss_image = pg.image.load(
@@ -816,23 +819,22 @@ boss_image = pg.transform.scale(boss_image, (230, 230))
 enemy_bullet_image = pg.image.load(
     "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/chapter_2_img/game_sprite/enemy_bullet.png")
 enemy_bullet_image = pg.transform.scale(enemy_bullet_image, (40, 40))
+laser_image = pg.image.load(
+    "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/chapter_2_img/game_sprite/laser.png")
 
-# 敌人子弹的设计
-bullet_width = 20
-bullet_height = 35
-bullet_speed = 10
+# 音乐
+pg.mixer.music.load(
+    'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/chapter_2_img/background_music.mp3')
+pg.mixer.music.set_volume(0.5)
+pg.mixer.music.play(-1)
 
-# Create lists for bullets and enemies
-enemies = []
-enemy_bullets = []
-boss_lasers = []
-
-# boss的元素，不定义类，不好重复开游戏刷新
-boss_health = 1000
-boss_attack_delay = 60
-boss_bullet_speed = 10
-boss_laser_delay = 240
-laser_speed = 3
+# Define game colors
+white = (255, 255, 255)
+black = (0, 0, 0)
+red = (255, 0, 0)
+blue = (0, 0, 255)
+green = (0, 255, 0)
+yellow = (0, 255, 255)
 
 # Define enemy properties
 enemy_width = 70
@@ -842,8 +844,34 @@ enemy_spawn_delay = 60
 enemy_bullet_speed = 5
 enemy_fire_delay = 60
 
-# boss 精灵
-boss_sprite = pg.Rect(200, 100, 300, 120)
+# Set up game clock
+clock = pg.time.Clock()
+
+# Define game variables
+score = 0
+game_over = False
+enemies_spawned = 0
+enemies_to_spawn = 10
+level = 1
+
+# Define boss variables
+boss_health = 1000
+boss_attack_delay = 60
+boss_bullet_speed = 10
+boss_laser_delay = 240
+laser_speed = 3
+
+# Define bullet properties
+bullet_width = 20
+bullet_height = 35
+bullet_speed = 10
+
+# Create lists for bullets and enemies
+player_bullets = []
+enemies = []
+enemy_bullets = []
+boss_lasers = []
+items = []
 
 
 class PlayerCh2(pg.sprite.Sprite):
@@ -851,6 +879,7 @@ class PlayerCh2(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self)
         self.image = player_image
         self.rect = self.image.get_rect()
+        # 用来设置回到原点
         self.rect.centerx = config.WIDTH / 2
         self.rect.bottom = config.HEIGHT - 10
         self.speed = 5
@@ -859,12 +888,6 @@ class PlayerCh2(pg.sprite.Sprite):
         self.invisible = False
         self.player_invisible_delay_time = 120
         self.player_flash_delay = 20
-        self.radius = 20
-        self.player_width = 70
-        self.player_height = 70
-        self.player_x = self.rect.centerx
-        self.player_y = self.rect.centery
-        self.player_sprite = pg.Rect(self.player_x, self.player_y, self.player_width, self.player_height)
 
     def update(self):
         if self.rect.right > WINDOWWIDTH:
@@ -879,13 +902,23 @@ class PlayerCh2(pg.sprite.Sprite):
 
 playerCh2 = PlayerCh2()
 
+boss_sprite = pg.Rect(200, 100, 300, 120)
 
-def update_enemy_bullets():
-    # Move and remove enemy bullets that have gone offscreen
-    for bullet in enemy_bullets:
-        bullet.move_ip(0, enemy_bullet_speed)
-        if bullet.top > WINDOWHEIGHT:
-            enemy_bullets.remove(bullet)
+
+# def create_enemy_bullet(enemy):
+#     # Create a new enemy bullet sprite
+#     bullet_x = enemy.centerx - bullet_width / 2
+#     bullet_y = enemy.bottom
+#     bullet_sprite = pg.Rect(bullet_x, bullet_y, bullet_width, bullet_height)
+#     enemy_bullets.append(bullet_sprite)
+
+
+# def update_enemy_bullets():
+#     # Move and remove enemy bullets that have gone offscreen
+#     for bullet in enemy_bullets:
+#         bullet.move_ip(0, enemy_bullet_speed)
+#         if bullet.top > WINDOWHEIGHT:
+#             enemy_bullets.remove(bullet)
 
 
 def create_boss():
@@ -906,22 +939,34 @@ def create_boss_bullet():
 
 def check_boss_collisions():
     # Check for collisions between player bullets and the boss
-    if not playerCh2.invisible:
-        for bullet in enemy_bullets:
+    global boss_health
+    for bullet in enemy_bullets:
+        if not playerCh2.invisible:
             if bullet.colliderect(playerCh2.rect):
                 enemy_bullets.remove(bullet)
                 playerCh2.health -= 10
                 if playerCh2.health == 0:
                     playerCh2.lives -= 1
                 else:
+                    pass
                     # Make the player briefly invisible if they have just lost a life
-                    playerCh2.invisible = True
-                    playerCh2.player_flash_delay = playerCh2.player_invisible_delay_time
-                # player_sprite.bottom = -100
+                    # playerCh2.invisible = True
+                    # playerCh2.player_flash_delay = playerCh2.player_invisible_delay_time
+                    # player_sprite.bottom = -100
+
+
+def create_boss_laser():
+    # Create a new laser sprite
+    laser_width = 100
+    laser_height = 150
+    laser_x = boss_sprite.centerx - laser_width / 2
+    laser_y = boss_sprite.bottom
+    laser_sprite = pg.Rect(laser_x, laser_y, laser_width, laser_height)
+    boss_lasers.append(laser_sprite)
 
 
 def update_boss():
-    global boss_sprite, boss_health, boss_attack_delay, boss_bullet_speed
+    global boss_sprite, boss_health, boss_attack_delay, boss_bullet_speed, game_over
     if boss_health > 0:
         # Move the boss around randomly
         boss_sprite.move_ip(random.randint(-12, 13), random.randint(-13, 12))
@@ -940,15 +985,16 @@ def update_boss():
         create_boss_bullet()
         boss_attack_delay = 30
 
-    # global boss_laser_delay, laser_speed
-    # boss_laser_delay -= 1
-    # if boss_laser_delay == 0:
-    #     create_boss_laser()
-    #     # print (boss_laser_delay)
-    #     boss_laser_delay = 240
+    global boss_laser_delay, laser_speed
+    boss_laser_delay -= 1
+    if boss_laser_delay == 0:
+        create_boss_laser()
+        # print (boss_laser_delay)
+        boss_laser_delay = 240
 
     if not playerCh2.invisible:
         if playerCh2.rect.colliderect(boss_sprite):
+            print("boom")
             # Move the boss away from the player
             if boss_sprite.centerx < playerCh2.rect.centerx:
                 boss_sprite.move_ip(-10, 0)
@@ -958,44 +1004,66 @@ def update_boss():
                 boss_sprite.move_ip(0, -10)
             else:
                 boss_sprite.move_ip(0, 10)
-            playerCh2.health -= 10
+            playerCh2.lives -= 1
             if playerCh2.health == 0:
-                playerCh2.lives -= 1
+                game_over = True
             else:
+                pass
                 # Make the player briefly invisible if they have just lost a life
-                playerCh2.invisible = True
-                playerCh2.player_flash_delay = playerCh2.player_invisible_delay_time
+                # playerCh2.invisible = True
+                # playerCh2.player_flash_delay = playerCh2.player_invisible_delay_time
                 # player_sprite.bottom = -100
 
-    # for laser in boss_lasers:
-    #     laser.move_ip(0, laser_speed)
-    #     if not player_invisible:
-    #         if laser.colliderect(player_sprite):
-    #             boss_laser_delay = 240
-    #             player_lives -= 1
-    #             if player_lives == 0:
-    #                 game_over = True
-    #             else:
-    #                 # Make the player briefly invisible if they have just lost a life
-    #                 player_invisible = True
-    #                 player_invisible_delay = player_invisible_delay_time
-    #     if laser.bottom < 0:
-    #         boss_lasers.remove(laser)
+    for laser in boss_lasers:
+        laser.move_ip(0, laser_speed)
+        if not playerCh2.invisible:
+            if laser.colliderect(playerCh2.rect):
+                print('boom laser')
+                boss_laser_delay = 240
+                playerCh2.health -= 10
+                if playerCh2.health == 0:
+                    playerCh2.lives -= 1
+                else:
+                    pass
+                    # Make the player briefly invisible if they have just lost a life
+                    # playerCh2.invisible = True
+                    # playerCh2.player_invisible_delay = playerCh2.player_invisible_delay_time
+        if laser.bottom < 0:
+            boss_lasers.remove(laser)
+
+
+flag = False
+
+
+def update_game():
+    global flag
+    if flag:
+        create_boss()
+        flag = True
+    update_boss()
+
+
+def draw_game():
+    font = pg.font.Font(None, 36)
+    boss_health_text = font.render("Boss Health: " + str(boss_health), True, config.WHITE)
+    game_window.blit(boss_health_text, (WINDOWWIDTH / 2 - 70, 50))
+    game_window.blit(boss_image, boss_sprite)
 
 
 def chapter2():
     flag = True
     connect_ = pymysql.connect(host="localhost", user="root", port=3307, password="Jason20040903", database="user_info",
                                charset="utf8")
-    bg1 = plane_sprite.BackGroud(False,
-                                 "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/chapter2_bg.jpg")
-    bg2 = plane_sprite.BackGroud(True,
-                                 "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/chapter2_bg.jpg")
-    back_group = pg.sprite.Group(bg1, bg2)
-    odds = 0
-    highest_score = 0
-    health = playerCh2.health
-    lives = playerCh2.lives
+    background_image = pg.image.load(
+        "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/chapter2_bg.jpg")
+    background_rect = background_image.get_rect()
+
+    background_surface = pg.Surface((800, 3200))
+    for x in range(0, 600, background_image.get_width()):
+        for y in range(0, 3200, background_image.get_height()):
+            background_surface.blit(background_image, (x, y))
+    background_position = [0, -WINDOWHEIGHT]
+
     playerCh2.rect.centerx = config.WIDTH / 2
     playerCh2.rect.bottom = config.HEIGHT - 10
     score = 0
@@ -1012,6 +1080,8 @@ def chapter2():
         w, h = 600, 350  # 图像的尺寸
 
         while cap.isOpened() and running:
+            health = playerCh2.health
+            lives = playerCh2.lives
             ret, img = cap.read()
             img = cv2.flip(img, 1)
             if not ret:
@@ -1064,12 +1134,16 @@ def chapter2():
                 wrist = hand_landmarks.landmark[mp_hands.HandLandmark.WRIST]
                 cx = int(wrist.x * w)
                 cy = int(wrist.y * h)
+                # right
                 if cx > w / 2:
                     playerCh2.rect.x += playerCh2.speed
+                # left
                 elif cx < w / 2:
                     playerCh2.rect.x -= playerCh2.speed
+                # bottom
                 if cy > h / 2:
                     playerCh2.rect.y += playerCh2.speed
+                # top
                 elif cy < h / 2:
                     playerCh2.rect.y -= playerCh2.speed
 
@@ -1083,7 +1157,6 @@ def chapter2():
             if cv2.waitKey(5) == ord('q'):
                 break  # 按下 q 鍵停止
 
-            clock.tick(config.FPS)
             # 特殊反应
             for event in pg.event.get():
                 # 回到主页
@@ -1098,42 +1171,38 @@ def chapter2():
                 # if event.type == INVINCIBLE_TIME:
                 #     player.invincible = False  # 取消无敌状态
                 #     player.image = game_img.player_img
-                pg.time.set_timer(INVINCIBLE_TIME, 0)  # 取消定时器
-
-            # 更新
-            all_sprites.update()
-
-            back_group.draw(screen)
-            # screen.blit(game_img.background_img, (0, 0))  # 显示背景图片的方法
-            screen.blit(player_image, playerCh2)
-            draw_text(screen, str(score), 18, config.WIDTH / 2, 10)
-            draw_health(screen, health, 10, 10, str(health), 18)
+                # pg.time.set_timer(INVINCIBLE_TIME, 0)  # 取消定时器
+            background_position[1] += 1
+            if background_position[1] > 0:
+                background_position[1] -= 1600
+            game_window.blit(background_surface, background_position)
+            draw_text(game_window, str(score), 18, config.WIDTH / 2, 10)
+            draw_health(game_window, health, 10, 10, str(health), 18)
             for bullet in enemy_bullets:
                 # pygame.draw.rect(game_window, red, bullet)
-                screen.blit(enemy_bullet_image, bullet)
-            font_boss = pg.font.Font(None, 36)
-            boss_health_text = font_boss.render("Boss Health: " + str(boss_health), True, config.WHITE)
-            screen.blit(boss_health_text, (WINDOWWIDTH / 2 - 70, 50))
-            screen.blit(boss_image, boss_sprite)
+                game_window.blit(enemy_bullet_image, bullet)
+            for laser in boss_lasers:
+                game_window.blit(laser_image, laser)
             if lives <= 3:
-                draw_lives(screen, lives, game_img.player_lives_img, config.WIDTH - 100, 15)
+                draw_lives(game_window, lives, game_img.player_lives_img, config.WIDTH - 100, 15)
             else:
-                draw_lives(screen, lives, game_img.player_lives_img, config.WIDTH - 180, 15)
+                draw_lives(game_window, lives, game_img.player_lives_img, config.WIDTH - 180, 15)
 
             # 更新画面
-            if flag:
-                create_boss()
-                flag = False
-            playerCh2.update()
-            update_enemy_bullets()
-            update_boss()
+            # update_enemy_bullets()
             check_boss_collisions()
             back_group.update()
+            playerCh2.update()
+            update_game()
+            draw_game()
+            game_window.blit(player_image, playerCh2)
             pg.display.update()
+            clock.tick(config.FPS)
 
 
 # 运行
-draw_init()
+# draw_init()
+chapter2()
 
 # 退出
 pg.quit()

@@ -127,7 +127,7 @@ def create_enemy_bullet(enemy):
     enemy_bullets.append(bullet_sprite)
 
 
-# 更新敌人
+# 更新玩家
 def update_player():
     global player_invisible, player_invisible_delay, player_invisible_delay_time
     global player_can_shoot, player_shoot_delay
