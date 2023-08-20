@@ -913,12 +913,12 @@ boss_sprite = pg.Rect(200, 100, 300, 120)
 #     enemy_bullets.append(bullet_sprite)
 
 
-# def update_enemy_bullets():
-#     # Move and remove enemy bullets that have gone offscreen
-#     for bullet in enemy_bullets:
-#         bullet.move_ip(0, enemy_bullet_speed)
-#         if bullet.top > WINDOWHEIGHT:
-#             enemy_bullets.remove(bullet)
+def update_enemy_bullets():
+    # Move and remove enemy bullets that have gone offscreen
+    for bullet in enemy_bullets:
+        bullet.move_ip(0, enemy_bullet_speed)
+        if bullet.top > WINDOWHEIGHT:
+            enemy_bullets.remove(bullet)
 
 
 def create_boss():
@@ -945,7 +945,8 @@ def check_boss_collisions():
             if bullet.colliderect(playerCh2.rect):
                 enemy_bullets.remove(bullet)
                 playerCh2.health -= 10
-                if playerCh2.health == 0:
+                if playerCh2.health <= 0:
+                    playerCh2.health = 100
                     playerCh2.lives -= 1
                 else:
                     pass
@@ -994,7 +995,6 @@ def update_boss():
 
     if not playerCh2.invisible:
         if playerCh2.rect.colliderect(boss_sprite):
-            print("boom")
             # Move the boss away from the player
             if boss_sprite.centerx < playerCh2.rect.centerx:
                 boss_sprite.move_ip(-10, 0)
@@ -1004,9 +1004,10 @@ def update_boss():
                 boss_sprite.move_ip(0, -10)
             else:
                 boss_sprite.move_ip(0, 10)
-            playerCh2.lives -= 1
+            playerCh2.health -= 1
             if playerCh2.health == 0:
-                game_over = True
+                playerCh2.health = 100
+                playerCh2.lives -= 1
             else:
                 pass
                 # Make the player briefly invisible if they have just lost a life
@@ -1018,11 +1019,14 @@ def update_boss():
         laser.move_ip(0, laser_speed)
         if not playerCh2.invisible:
             if laser.colliderect(playerCh2.rect):
-                print('boom laser')
                 boss_laser_delay = 240
                 playerCh2.health -= 10
                 if playerCh2.health == 0:
-                    playerCh2.lives -= 1
+                    playerCh2.health = 100
+                    if playerCh2.lives != 0:
+                        playerCh2.lives -= 1
+                    else:
+                        game_over = True
                 else:
                     pass
                     # Make the player briefly invisible if they have just lost a life
@@ -1035,14 +1039,6 @@ def update_boss():
 flag = False
 
 
-def update_game():
-    global flag
-    if flag:
-        create_boss()
-        flag = True
-    update_boss()
-
-
 def draw_game():
     font = pg.font.Font(None, 36)
     boss_health_text = font.render("Boss Health: " + str(boss_health), True, config.WHITE)
@@ -1051,7 +1047,9 @@ def draw_game():
 
 
 def chapter2():
-    flag = True
+    playerCh2.lives = 3
+    playerCh2.health = 100
+    flag_ = True
     connect_ = pymysql.connect(host="localhost", user="root", port=3307, password="Jason20040903", database="user_info",
                                charset="utf8")
     background_image = pg.image.load(
@@ -1172,6 +1170,7 @@ def chapter2():
                 #     player.invincible = False  # 取消无敌状态
                 #     player.image = game_img.player_img
                 # pg.time.set_timer(INVINCIBLE_TIME, 0)  # 取消定时器
+
             background_position[1] += 1
             if background_position[1] > 0:
                 background_position[1] -= 1600
@@ -1189,11 +1188,14 @@ def chapter2():
                 draw_lives(game_window, lives, game_img.player_lives_img, config.WIDTH - 180, 15)
 
             # 更新画面
-            # update_enemy_bullets()
+            update_enemy_bullets()
             check_boss_collisions()
             back_group.update()
             playerCh2.update()
-            update_game()
+            if flag_:
+                create_boss()
+                flag_ = False
+            update_boss()
             draw_game()
             game_window.blit(player_image, playerCh2)
             pg.display.update()
@@ -1201,8 +1203,7 @@ def chapter2():
 
 
 # 运行
-# draw_init()
-chapter2()
+draw_init()
 
 # 退出
 pg.quit()
