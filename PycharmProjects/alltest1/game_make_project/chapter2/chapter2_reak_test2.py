@@ -8,8 +8,8 @@ import cv2
 pygame.init()
 
 # Set up the game window
-window_width = 800
-window_height = 600
+window_width = 600
+window_height = 780
 game_window = pygame.display.set_mode((window_width, window_height))
 pygame.display.set_caption("chapter2")
 
@@ -74,6 +74,11 @@ class Player(pygame.sprite.Sprite):
         self.lives = 3
         self.health = 100
         self.player_invisible = False
+        self.player_width = 70
+        self.player_height = 70
+        self.player_x = window_width / 2 - self.player_width / 2
+        self.player_y = window_height - self.player_height - 10
+        self.player_sprite = pygame.Rect(self.player_x, self.player_y, self.player_width, self.player_height)
 
     def update(self):
         if self.rect.right > window_width:
@@ -85,6 +90,8 @@ class Player(pygame.sprite.Sprite):
         if self.rect.top < 0:
             self.rect.top = 0
 
+
+player = Player()
 
 # Create boss sprite
 boss_sprite = pygame.Rect(200, 100, 300, 120)
@@ -176,7 +183,7 @@ def update_boss():
     global boss_sprite, boss_health, boss_attack_delay, boss_bullet_speed, game_over
     if boss_health > 0:
         # Move the boss around randomly
-        boss_sprite.move_ip(random.randint(-10, 10), random.randint(-10, 10))
+        boss_sprite.move_ip(random.randint(-17, 17), random.randint(-17, 17))
         # Prevent the boss from going out of the game window
         if boss_sprite.left < 0:
             boss_sprite.left = 0
@@ -199,47 +206,53 @@ def update_boss():
     #     # print (boss_laser_delay)
     #     boss_laser_delay = 240
 
-    global player_invisible, player_invisible_delay, player_invisible_delay_time
-    # if not player_invisible:
-    #     if player_sprite.colliderect(boss_sprite):
-    #         # Move the boss away from the player
-    #         if boss_sprite.centerx < player_sprite.centerx:
-    #             boss_sprite.move_ip(-10, 0)
-    #         else:
-    #             boss_sprite.move_ip(10, 0)
-    #         if boss_sprite.centery < player_sprite.centery:
-    #             boss_sprite.move_ip(0, -10)
-    #         else:
-    #             boss_sprite.move_ip(0, 10)
-    #         global player_lives
-    #         player_lives -= 1
-    #         if player_lives == 0:
-    #             game_over = True
-    #         else:
-    #             # Make the player briefly invisible if they have just lost a life
-    #
-    #             player_invisible = True
-    #             player_invisible_delay = player_invisible_delay_time
-    #             # player_sprite.bottom = -100
+    if not player.player_invisible:
+        if player.player_sprite.colliderect(boss_sprite):
+            # Move the boss away from the player
+            if boss_sprite.centerx <= player.rect.centerx:
+                boss_sprite.move_ip(-10, 0)
+            else:
+                boss_sprite.move_ip(10, 0)
+            if boss_sprite.centery <= player.rect.centery:
+                boss_sprite.move_ip(0, -10)
+            else:
+                boss_sprite.move_ip(0, 10)
 
-    # for laser in boss_lasers:
-    #     laser.move_ip(0, laser_speed)
-    #     if not player_invisible:
-    #         if laser.colliderect(player_sprite):
-    #             boss_laser_delay = 240
-    #             player_lives -= 1
-    #             if player_lives == 0:
-    #                 game_over = True
-    #             else:
-    #                 # Make the player briefly invisible if they have just lost a life
-    #                 player_invisible = True
-    #                 player_invisible_delay = player_invisible_delay_time
-    #     if laser.bottom < 0:
-    #         boss_lasers.remove(laser)
+
+#         global player_lives
+#         player_lives -= 1
+#         if player_lives == 0:
+#             game_over = True
+#         else:
+#             # Make the player briefly invisible if they have just lost a life
+#
+#             player_invisible = True
+#             player_invisible_delay = player_invisible_delay_time
+#             # player_sprite.bottom = -100
+
+# for laser in boss_lasers:
+#     laser.move_ip(0, laser_speed)
+#     if not player_invisible:
+#         if laser.colliderect(player_sprite):
+#             boss_laser_delay = 240
+#             player_lives -= 1
+#             if player_lives == 0:
+#                 game_over = True
+#             else:
+#                 # Make the player briefly invisible if they have just lost a life
+#                 player_invisible = True
+#                 player_invisible_delay = player_invisible_delay_time
+#     if laser.bottom < 0:
+#         boss_lasers.remove(laser)
+
+flag = False
 
 
 def update_game():
-    create_boss()
+    global flag
+    if flag:
+        create_boss()
+        flag = True
     update_boss()
 
 
@@ -268,7 +281,6 @@ lineType = cv2.LINE_AA
 
 
 def game_start():
-    player = Player()
     with mp_hands.Hands(model_complexity=0, max_num_hands=1, min_detection_confidence=0.55, static_image_mode=False,
                         min_tracking_confidence=0.55) as hands:
         if not cap.isOpened():
@@ -367,7 +379,7 @@ def game_start():
             draw_game()
             game_window.blit(player_image, player)
             pygame.display.update()
-            clock.tick(60)
+            clock.tick(144)
 
 
 if __name__ == '__main__':
