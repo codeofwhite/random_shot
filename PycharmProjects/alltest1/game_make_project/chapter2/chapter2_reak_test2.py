@@ -8,8 +8,8 @@ import cv2
 pygame.init()
 
 # Set up the game window
-window_width = 600
-window_height = 800
+window_width = 800
+window_height = 600
 game_window = pygame.display.set_mode((window_width, window_height))
 pygame.display.set_caption("chapter2")
 
@@ -50,22 +50,6 @@ yellow = (0, 255, 255)
 # Set up game clock
 clock = pygame.time.Clock()
 
-# Define player properties
-player_width = 70
-player_height = 70
-player_x = window_width / 2 - player_width / 2
-player_y = window_height - player_height - 10
-player_speed = 5
-player_lives = 5
-player_invisible = False
-player_invisible_delay_time = 120
-player_flash_delay = 20
-player_can_shoot = True
-player_shoot_delay = 20
-player_bullets_speed = 0
-bomb_count = 0
-spread_bullet = False
-
 # Define game variables
 score = 0
 game_over = False
@@ -80,8 +64,27 @@ boss_bullet_speed = 10
 boss_laser_delay = 240
 laser_speed = 3
 
-# Create player sprite
-player_sprite = pygame.Rect(player_x, player_y, player_width, player_height)
+
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = player_image
+        self.rect = self.image.get_rect()
+        self.speed = 5
+        self.lives = 3
+        self.health = 100
+        self.player_invisible = False
+
+    def update(self):
+        if self.rect.right > window_width:
+            self.rect.right = window_width
+        if self.rect.left < 0:
+            self.rect.left = 0
+        if self.rect.bottom > window_height:
+            self.rect.bottom = window_height
+        if self.rect.top < 0:
+            self.rect.top = 0
+
 
 # Create boss sprite
 boss_sprite = pygame.Rect(200, 100, 300, 120)
@@ -159,53 +162,6 @@ def gesture(finger_angle):
         return "scissors"
     elif f1 < 50 and f2 < 50 and f3 < 50 and f4 < 50 and f5 < 50:
         return "paper"
-
-
-def update_player(cx, cy, w, h, label):
-    global player_invisible, player_invisible_delay, player_invisible_delay_time
-    global player_can_shoot, player_shoot_delay
-    # Move the player based on user input
-    # 玩家移动
-    if cx > w / 2:
-        player_sprite.move_ip(player_speed, 0)
-    elif cx < w / 2:
-        player_sprite.move_ip(-player_speed, 0)
-    if cy > h / 2:
-        player_sprite.move_ip(0, player_speed)
-    elif cy < h / 2:
-        player_sprite.move_ip(0, -player_speed)
-
-    if player_sprite.left < 0:
-        player_sprite.left = 0
-    if player_sprite.right > window_width:
-        player_sprite.right = window_width
-    if player_sprite.top < 0:
-        player_sprite.top = 0
-    if player_sprite.bottom > window_height:
-        player_sprite.bottom = window_height
-    # 玩家射击
-    # if gesture(finger_angle) == 'rock' and label == 'Left':
-    #     pass
-    # if gesture(finger_angle) == 'rock' and label == 'Right':
-    #     pass
-    if player_can_shoot:
-        # create_player_bullet()
-        player_can_shoot = False  # disable shooting temporarily
-        player_shoot_delay = 20 - player_bullets_speed  # set delay based on current level
-        if player_shoot_delay <= 0:
-            player_shoot_delay = 1
-    # Decrement the shoot delay timer
-    if not player_can_shoot:
-        player_shoot_delay -= 1
-        if player_shoot_delay == 0:
-            player_can_shoot = True
-
-    # Make the player briefly invisible if they have just lost a life
-    if player_invisible:
-        player_invisible_delay -= 1
-        if player_invisible_delay == 0:
-            player_invisible = False
-            # player_sprite.bottom = window_height - 10
 
 
 def create_boss():
@@ -288,18 +244,10 @@ def update_game():
 
 
 def draw_game():
-    global player_flash_delay
-    # Draw the boss laser
-    # game_window.fill(white)
-    if not player_invisible or (player_invisible and player_flash_delay % 10 < 5):
-        # if (player_invisible and player_flash_delay % 10 < 5):
-        #     print ("Check")
-        game_window.blit(player_image, player_sprite)
     font = pygame.font.Font(None, 36)
     boss_health_text = font.render("Boss Health: " + str(boss_health), True, white)
     game_window.blit(boss_health_text, (window_width / 2 - 70, 50))
     game_window.blit(boss_image, boss_sprite)
-    pygame.display.update()
 
 
 background_image = pygame.image.load(
@@ -318,86 +266,109 @@ cap = cv2.VideoCapture(0)  # 开启摄像头
 fontFace = cv2.FONT_HERSHEY_SIMPLEX
 lineType = cv2.LINE_AA
 
-with mp_hands.Hands(model_complexity=0, max_num_hands=1, min_detection_confidence=0.55, static_image_mode=False,
-                    min_tracking_confidence=0.55) as hands:
-    if not cap.isOpened():
-        print("Cannot open camera")
-        exit()
 
-    running = True
-    w, h = 600, 350  # 图像的尺寸
-    cx, cy = 0, 0
-    label = ''
+def game_start():
+    player = Player()
+    with mp_hands.Hands(model_complexity=0, max_num_hands=1, min_detection_confidence=0.55, static_image_mode=False,
+                        min_tracking_confidence=0.55) as hands:
+        if not cap.isOpened():
+            print("Cannot open camera")
+            exit()
 
-    while True:
-        ret, img = cap.read()
-        img = cv2.flip(img, 1)
-        if not ret:
-            print("Cannot receive frame")
-            break
-        img = cv2.resize(img, (600, 350))  # 調整畫面尺寸
-        size = img.shape  # 取得攝影機影像尺寸
-        img2 = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # 將 BGR 轉換成 RGB
-        results = hands.process(img2)  # 偵測手掌
-        if results.multi_hand_landmarks:
-            for hand_landmarks, handedness in zip(results.multi_hand_landmarks,
-                                                  results.multi_handedness):
-                label = handedness.classification[0].label
-                left_hand_landmarks = hand_landmarks
-                right_hand_landmarks = hand_landmarks
-                right_finger_points = []  # 储存手指的坐标
-                left_finger_points = []
-                x_1 = int(left_hand_landmarks.landmark[0].x * img.shape[1])  # 获取第 0 号关键点（手腕根部）的坐标
-                y_1 = int(left_hand_landmarks.landmark[0].y * img.shape[0])
-                x_2 = int(right_hand_landmarks.landmark[0].x * img.shape[1])  # 获取第 0 号关键点（手腕根部）的坐标
-                y_2 = int(right_hand_landmarks.landmark[0].y * img.shape[0])
-                for i in left_hand_landmarks.landmark:
-                    x_ = i.x * w  # 这里乘w, h可以理解为线性变换
-                    y_ = i.y * h
-                    left_finger_points.append((x_, y_))
-                if left_finger_points:
-                    finger_angle = hand_angle(left_finger_points)
-                    text = gesture(finger_angle)
-                    cv2.putText(img, text, (30, 120), fontFace, 5, (255, 255, 255), 10, lineType)
-                for i in right_hand_landmarks.landmark:
-                    x_ = i.x * w  # 这里乘w, h可以理解为线性变换
-                    y_ = i.y * h
-                    right_finger_points.append((x_, y_))
-                if right_finger_points:
-                    finger_angle = hand_angle(right_finger_points)
-                    text = gesture(finger_angle)
-                    cv2.putText(img, text, (30, 120), fontFace, 5, (255, 255, 255), 10, lineType)
-                # 显示出左右手
-                cv2.putText(img, f"{label}", (x_1, y_1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255),
-                            2)
-                # 將節點和骨架繪製到影像中
-                mp_drawing.draw_landmarks(
-                    img,
-                    hand_landmarks,
-                    mp_hands.HAND_CONNECTIONS,
-                    mp_drawing_styles.get_default_hand_landmarks_style(),
-                    mp_drawing_styles.get_default_hand_connections_style())
+        running = True
+        w, h = 600, 350  # 图像的尺寸
+        cx, cy = 0, 0
+        label = ''
 
-            wrist = hand_landmarks.landmark[mp_hands.HandLandmark.WRIST]
-            cx = int(wrist.x * w)
-            cy = int(wrist.y * h)
+        while True:
+            ret, img = cap.read()
+            img = cv2.flip(img, 1)
+            if not ret:
+                print("Cannot receive frame")
+                break
+            img = cv2.resize(img, (600, 350))  # 調整畫面尺寸
+            size = img.shape  # 取得攝影機影像尺寸
+            img2 = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # 將 BGR 轉換成 RGB
+            results = hands.process(img2)  # 偵測手掌
+            if results.multi_hand_landmarks:
+                for hand_landmarks, handedness in zip(results.multi_hand_landmarks,
+                                                      results.multi_handedness):
+                    label = handedness.classification[0].label
+                    left_hand_landmarks = hand_landmarks
+                    right_hand_landmarks = hand_landmarks
+                    right_finger_points = []  # 储存手指的坐标
+                    left_finger_points = []
+                    x_1 = int(left_hand_landmarks.landmark[0].x * img.shape[1])  # 获取第 0 号关键点（手腕根部）的坐标
+                    y_1 = int(left_hand_landmarks.landmark[0].y * img.shape[0])
+                    x_2 = int(right_hand_landmarks.landmark[0].x * img.shape[1])  # 获取第 0 号关键点（手腕根部）的坐标
+                    y_2 = int(right_hand_landmarks.landmark[0].y * img.shape[0])
+                    for i in left_hand_landmarks.landmark:
+                        x_ = i.x * w  # 这里乘w, h可以理解为线性变换
+                        y_ = i.y * h
+                        left_finger_points.append((x_, y_))
+                    if left_finger_points:
+                        finger_angle = hand_angle(left_finger_points)
+                        text = gesture(finger_angle)
+                        cv2.putText(img, text, (30, 120), fontFace, 5, (255, 255, 255), 10, lineType)
+                    for i in right_hand_landmarks.landmark:
+                        x_ = i.x * w  # 这里乘w, h可以理解为线性变换
+                        y_ = i.y * h
+                        right_finger_points.append((x_, y_))
+                    if right_finger_points:
+                        finger_angle = hand_angle(right_finger_points)
+                        text = gesture(finger_angle)
+                        cv2.putText(img, text, (30, 120), fontFace, 5, (255, 255, 255), 10, lineType)
+                    # 显示出左右手
+                    cv2.putText(img, f"{label}", (x_1, y_1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255),
+                                2)
+                    # 將節點和骨架繪製到影像中
+                    mp_drawing.draw_landmarks(
+                        img,
+                        hand_landmarks,
+                        mp_hands.HAND_CONNECTIONS,
+                        mp_drawing_styles.get_default_hand_landmarks_style(),
+                        mp_drawing_styles.get_default_hand_connections_style())
 
-        cv2.imshow('test', img)
-        if cv2.waitKey(5) == ord('q'):
-            break  # 按下 q 鍵停止
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+                # 飞船移动
+                wrist = hand_landmarks.landmark[mp_hands.HandLandmark.WRIST]
+                cx = int(wrist.x * w)
+                cy = int(wrist.y * h)
+                if cx > w / 2:
+                    player.rect.x += player.speed
+                elif cx < w / 2:
+                    player.rect.x -= player.speed
+                if cy > h / 2:
+                    player.rect.y += player.speed
+                elif cy < h / 2:
+                    player.rect.y -= player.speed
 
-        background_position[1] += 1
-        if background_position[1] > 0:
-            background_position[1] -= 1600
+                # # 射击
+                # if ggf.gesture(finger_angle) == 'rock' and label == 'Left':
+                #     player.shoot_left()
+                # if ggf.gesture(finger_angle) == 'rock' and label == 'Right':
+                #     player.shoot_right()
 
-        # Draw the background surface onto the game window
-        game_window.blit(background_surface, background_position)
-        print(cx, cy, label)
-        update_player(cx, cy, w, h, label)
-        update_game()
-        draw_game()
-        clock.tick(60)
+            cv2.imshow('test', img)
+            if cv2.waitKey(5) == ord('q'):
+                break  # 按下 q 鍵停止
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    cv2.destroyAllWindows()
+                    return
+
+            background_position[1] += 1
+            if background_position[1] > 0:
+                background_position[1] -= 1600
+
+            # Draw the background surface onto the game window
+            game_window.blit(background_surface, background_position)
+            player.update()
+            update_game()
+            draw_game()
+            game_window.blit(player_image, player)
+            pygame.display.update()
+            clock.tick(60)
+
+
+if __name__ == '__main__':
+    game_start()

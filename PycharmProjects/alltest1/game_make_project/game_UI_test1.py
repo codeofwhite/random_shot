@@ -6,6 +6,9 @@ import cv2
 import mediapipe as mp
 import pygame as pg
 import random
+
+from cv2 import VideoCapture
+
 import config
 import gesture.gesture_funcs as ggf
 import game.game_sounds as game_sound
@@ -288,11 +291,6 @@ for i in range(20):
 pg.mixer.music.play(-1)
 score = 0
 
-# 开启摄像头和显示的参数
-cap = cv2.VideoCapture(0)  # 开启摄像头
-fontFace = cv2.FONT_HERSHEY_SIMPLEX
-lineType = cv2.LINE_AA
-
 
 # 游戏界面显示文字
 def draw_text(surf, text, size, x, y):
@@ -394,8 +392,7 @@ def draw_init():
                 profile()
         if button_5.collidepoint((mx, my)):
             if click:
-                pass
-                # chapter2()
+                chapter2()
         click = False
 
         # 取得输入
@@ -423,6 +420,11 @@ bg2 = plane_sprite.BackGroud(True,
 back_group = pg.sprite.Group(bg1, bg2)
 odds = 0
 highest_score = 0
+
+# 开启摄像头和显示的参数
+cap: VideoCapture = cv2.VideoCapture(0)  # 开启摄像头
+fontFace = cv2.FONT_HERSHEY_SIMPLEX
+lineType = cv2.LINE_AA
 
 
 # 游戏主体
@@ -806,232 +808,264 @@ class User_Gui():
 
 
 # chapter2
-# def chapter2():
-#     connect_ = pymysql.connect(host="localhost", user="root", port=3307, password="Jason20040903", database="user_info",
-#                                charset="utf8")
-#     bg1 = plane_sprite.BackGroud(False,
-#                                  "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/chapter2_bg.jpg")
-#     bg2 = plane_sprite.BackGroud(True,
-#                                  "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/chapter2_bg.jpg")
-#     back_group = pg.sprite.Group(bg1, bg2)
-#     odds = 0
-#     highest_score = 0
-#     player.image = game_img.chapter2_player_img
-#     health = player.health
-#     lives = player.lives
-#     player.rect.centerx = config.WIDTH / 2
-#     player.rect.bottom = config.HEIGHT - 10
-#     score = 0
-#
-#     with mp_hands.Hands(model_complexity=0, max_num_hands=1, min_detection_confidence=0.55, static_image_mode=False,
-#                         min_tracking_confidence=0.55) as hands:
-#         if not cap.isOpened():
-#             print("Cannot open camera")
-#             exit()
-#
-#         run = True  # 設定是否更動觸碰區位置
-#         running = True
-#         show_init = True
-#         w, h = 600, 350  # 图像的尺寸
-#
-#         while cap.isOpened() and running:
-#             ret, img = cap.read()
-#             img = cv2.flip(img, 1)
-#             if not ret:
-#                 print("Cannot receive frame")
-#                 break
-#             img = cv2.resize(img, (600, 350))  # 調整畫面尺寸
-#             size = img.shape  # 取得攝影機影像尺寸
-#             img2 = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # 將 BGR 轉換成 RGB
-#             results = hands.process(img2)  # 偵測手掌
-#             if results.multi_hand_landmarks:
-#                 for hand_landmarks, handedness in zip(results.multi_hand_landmarks,
-#                                                       results.multi_handedness):
-#                     label = handedness.classification[0].label
-#                     left_hand_landmarks = hand_landmarks
-#                     right_hand_landmarks = hand_landmarks
-#                     right_finger_points = []  # 储存手指的坐标
-#                     left_finger_points = []
-#                     x_1 = int(left_hand_landmarks.landmark[0].x * img.shape[1])  # 获取第 0 号关键点（手腕根部）的坐标
-#                     y_1 = int(left_hand_landmarks.landmark[0].y * img.shape[0])
-#                     x_2 = int(right_hand_landmarks.landmark[0].x * img.shape[1])  # 获取第 0 号关键点（手腕根部）的坐标
-#                     y_2 = int(right_hand_landmarks.landmark[0].y * img.shape[0])
-#                     for i in left_hand_landmarks.landmark:
-#                         x_ = i.x * w  # 这里乘w, h可以理解为线性变换
-#                         y_ = i.y * h
-#                         left_finger_points.append((x_, y_))
-#                     if left_finger_points:
-#                         finger_angle = ggf.hand_angle(left_finger_points)
-#                         text = ggf.gesture(finger_angle)
-#                         cv2.putText(img, text, (30, 120), fontFace, 5, (255, 255, 255), 10, lineType)
-#                     for i in right_hand_landmarks.landmark:
-#                         x_ = i.x * w  # 这里乘w, h可以理解为线性变换
-#                         y_ = i.y * h
-#                         right_finger_points.append((x_, y_))
-#                     if right_finger_points:
-#                         finger_angle = ggf.hand_angle(right_finger_points)
-#                         text = ggf.gesture(finger_angle)
-#                         cv2.putText(img, text, (30, 120), fontFace, 5, (255, 255, 255), 10, lineType)
-#                     # 显示出左右手
-#                     cv2.putText(img, f"{label}", (x_1, y_1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255),
-#                                 2)
-#                     # 將節點和骨架繪製到影像中
-#                     mp_drawing.draw_landmarks(
-#                         img,
-#                         hand_landmarks,
-#                         mp_hands.HAND_CONNECTIONS,
-#                         mp_drawing_styles.get_default_hand_landmarks_style(),
-#                         mp_drawing_styles.get_default_hand_connections_style())
-#
-#                 # 飞船移动
-#                 wrist = hand_landmarks.landmark[mp_hands.HandLandmark.WRIST]
-#                 cx = int(wrist.x * w)
-#                 cy = int(wrist.y * h)
-#                 if cx > w / 2:
-#                     player.rect.x += player.speed
-#                 elif cx < w / 2:
-#                     player.rect.x -= player.speed
-#                 if cy > h / 2:
-#                     player.rect.y += player.speed
-#                 elif cy < h / 2:
-#                     player.rect.y -= player.speed
-#
-#                 # 射击
-#                 if ggf.gesture(finger_angle) == 'rock' and label == 'Left':
-#                     player.shoot_left()
-#                 if ggf.gesture(finger_angle) == 'rock' and label == 'Right':
-#                     player.shoot_right()
-#
-#             cv2.imshow('test', img)
-#             if cv2.waitKey(5) == ord('q'):
-#                 break  # 按下 q 鍵停止
-#
-#             clock.tick(config.FPS)
-#             # 特殊反应
-#             for event in pg.event.get():
-#                 if event.type == pg.QUIT:
-#                     quit_game = tk.messagebox.askyesno("quit", "是否确认退出游戏，您在游戏中获得的积分将消失!")
-#                     if quit_game:
-#                         cv2.destroyAllWindows()
-#                         running = False
-#                     else:
-#                         pass
-#                 if event.type == INVINCIBLE_TIME:
-#                     player.invincible = False  # 取消无敌状态
-#                     player.image = game_img.player_img
-#                 pg.time.set_timer(INVINCIBLE_TIME, 0)  # 取消定时器
-#
-#             # 更新
-#             all_sprites.update()
-#
-#             # 子弹和陨石碰撞
-#             hits = pg.sprite.groupcollide(rocks, bullets, True, True)  # 后面两个参数是判断碰撞后要不要删除;返回值是字典；默认矩形碰撞判断
-#             for hit in hits:
-#                 pg.mixer.Sound.play(random.choice(game_sound.expl_sounds))
-#                 score += int(hit.radius)
-#                 expl = Exploration(hit.rect.center, 'big')
-#                 all_sprites.add(expl)
-#                 # 掉宝机率
-#                 if random.random() > 0.85 - odds:
-#                     pow = Power(hit.rect.center)
-#                     all_sprites.add(pow)
-#                     # powers = pg.sprite.Group() 这个地方加上去就在发射时吃不到道具了，因为创建了一个新的精灵模组，飞机只能和最后的发生互动
-#                     powers.add(pow)
-#                 new_rock()
-#
-#             # 激光碰撞陨石
-#             hits = pg.sprite.groupcollide(rocks, lasers, True, False)  # 后面两个参数是判断碰撞后要不要删除;返回值是字典；默认矩形碰撞判断
-#             for hit in hits:
-#                 pg.mixer.Sound.play(random.choice(game_sound.expl_sounds))
-#                 score += int(hit.radius)
-#                 expl = Exploration(hit.rect.center, 'big')
-#                 all_sprites.add(expl)
-#                 # 掉宝机率
-#                 if random.random() > 0.85 - odds:
-#                     pow = Power(hit.rect.center)
-#                     all_sprites.add(pow)
-#                     # powers = pg.sprite.Group() 这个地方加上去就在发射时吃不到道具了，因为创建了一个新的精灵模组，飞机只能和最后的发生互动
-#                     powers.add(pow)
-#                 new_rock()
-#
-#             # 飞机和陨石碰撞
-#             hits = pg.sprite.spritecollide(player, rocks, True, pg.sprite.collide_circle)  # 需要在类中加radius
-#             for hit in hits:
-#                 expl = Exploration(hit.rect.center, 'small')
-#                 all_sprites.add(expl)
-#                 if not player.invincible:
-#                     health -= int(hit.radius)
-#                 # print(player.health)
-#                 new_rock()
-#                 if health <= 0:
-#                     death = Death(player.rect.center)
-#                     pg.mixer.Sound.play(game_sound.die_sound)
-#                     all_sprites.add(death)
-#                     health = player.health
-#                     lives -= 1
-#                     # print(player.lives)
-#                     player.hide()
-#             if lives == 0 and not (death.alive()):
-#                 cursor = connect_.cursor()
-#                 cursor.execute('use user_info')
-#                 sql_take = "SELECT highest_record FROM user_base_info WHERE user_name = %s"
-#                 cursor.execute(sql_take, (tk_login.user_name))
-#                 row = cursor.fetchone()
-#                 table_highest_score = row[0]
-#                 if table_highest_score < score:
-#                     highest_score = score
-#                 sql_record = "UPDATE user_base_info SET highest_record = %s WHERE user_name = %s"
-#                 cursor.execute(sql_record, (highest_score, tk_login.user_name))
-#                 sql_in = "UPDATE user_base_info SET score = score + %s WHERE user_name = %s"
-#                 cursor.execute(sql_in, (score, tk_login.user_name))
-#                 connect_.commit()
-#                 draw_text(screen, '你失败了', 26, config.WIDTH / 2, 50)
-#                 draw_text(screen, '按任意键继续', 26, config.WIDTH / 2, 100)
-#                 pg.mixer.Sound.play(game_sound.die_music)
-#                 pg.display.update()
-#                 waiting = True  # 设置一个等待标志
-#                 while waiting:  # 进入一个等待循环
-#                     for event in pg.event.get():
-#                         if event.type == pg.KEYUP:  # 如果检测到用户按下任意键
-#                             waiting = False  # 结束等待循环
-#                             cv2.destroyAllWindows()
-#                             # return  # 跳出game_main函数
-#                         if event.type == pg.QUIT:
-#                             cv2.destroyAllWindows()
-#                             running = False
-#                             # return
-#
-#             # 飞机和宝物碰撞
-#             hits = pg.sprite.spritecollide(player, powers, True)
-#             for hit in hits:
-#                 if hit.type == 'shield':
-#                     pg.mixer.Sound.play(game_sound.shield_sound)
-#                     health += 10
-#                     if health >= player.health:
-#                         health = player.health
-#                 if hit.type == 'gun':
-#                     pg.mixer.Sound.play(game_sound.gun_sound)
-#                     player.gunup()
-#                 if hit.type == 'time':
-#                     pg.mixer.Sound.play(game_sound.time_sound)
-#                     player.invincible_time()
-#                 if hit.type == 'time2':
-#                     pg.mixer.Sound.play(game_sound.time_2_sound)
-#                     score = int(score) * 2
-#
-#             back_group.draw(screen)
-#             # screen.blit(game_img.background_img, (0, 0))  # 显示背景图片的方法
-#             all_sprites.draw(screen)
-#             draw_text(screen, str(score), 18, config.WIDTH / 2, 10)
-#             draw_health(screen, health, 10, 10, str(health), 18)
-#             if lives <= 3:
-#                 draw_lives(screen, lives, game_img.player_lives_img, config.WIDTH - 100, 15)
-#             else:
-#                 draw_lives(screen, lives, game_img.player_lives_img, config.WIDTH - 180, 15)
-#
-#             # 更新画面
-#             back_group.update()
-#             pg.display.update()
+player_image = pg.image.load(
+    "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/chapter_2_img/game_sprite/player.png")
+
+
+class PlayerCh2(pg.sprite.Sprite):
+    def __init__(self):
+        pg.sprite.Sprite.__init__(self)
+        self.image = player_image
+        self.rect = self.image.get_rect()
+        self.rect.centerx = config.WIDTH / 2
+        self.rect.bottom = config.HEIGHT - 10
+        self.speed = 5
+        self.lives = 3
+        self.health = 100
+        self.invisible = False
+        self.radius = 20
+
+    # 复活后的隐藏状态
+    def hide(self):
+        self.hidden = True
+        self.hide_time = pg.time.get_ticks()
+        self.image = game_img.player_inv
+        self.invincible = True
+
+    def update(self):
+        if self.rect.right > WINDOWWIDTH:
+            self.rect.right = WINDOWWIDTH
+        if self.rect.left < 0:
+            self.rect.left = 0
+        if self.rect.bottom > WINDOWHEIGHT:
+            self.rect.bottom = WINDOWHEIGHT
+        if self.rect.top < 0:
+            self.rect.top = 0
+
+
+def chapter2():
+    playerCh2 = PlayerCh2()
+    connect_ = pymysql.connect(host="localhost", user="root", port=3307, password="Jason20040903", database="user_info",
+                               charset="utf8")
+    bg1 = plane_sprite.BackGroud(False,
+                                 "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/chapter2_bg.jpg")
+    bg2 = plane_sprite.BackGroud(True,
+                                 "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/chapter2_bg.jpg")
+    back_group = pg.sprite.Group(bg1, bg2)
+    odds = 0
+    highest_score = 0
+    health = playerCh2.health
+    lives = playerCh2.lives
+    playerCh2.rect.centerx = config.WIDTH / 2
+    playerCh2.rect.bottom = config.HEIGHT - 10
+    score = 0
+
+    with mp_hands.Hands(model_complexity=0, max_num_hands=1, min_detection_confidence=0.55, static_image_mode=False,
+                        min_tracking_confidence=0.55) as hands:
+        if not cap.isOpened():
+            print("Cannot open camera")
+            exit()
+
+        run = True  # 設定是否更動觸碰區位置
+        running = True
+        show_init = True
+        w, h = 600, 350  # 图像的尺寸
+
+        while cap.isOpened() and running:
+            ret, img = cap.read()
+            img = cv2.flip(img, 1)
+            if not ret:
+                print("Cannot receive frame")
+                break
+            img = cv2.resize(img, (600, 350))  # 調整畫面尺寸
+            size = img.shape  # 取得攝影機影像尺寸
+            img2 = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # 將 BGR 轉換成 RGB
+            results = hands.process(img2)  # 偵測手掌
+            if results.multi_hand_landmarks:
+                for hand_landmarks, handedness in zip(results.multi_hand_landmarks,
+                                                      results.multi_handedness):
+                    label = handedness.classification[0].label
+                    left_hand_landmarks = hand_landmarks
+                    right_hand_landmarks = hand_landmarks
+                    right_finger_points = []  # 储存手指的坐标
+                    left_finger_points = []
+                    x_1 = int(left_hand_landmarks.landmark[0].x * img.shape[1])  # 获取第 0 号关键点（手腕根部）的坐标
+                    y_1 = int(left_hand_landmarks.landmark[0].y * img.shape[0])
+                    x_2 = int(right_hand_landmarks.landmark[0].x * img.shape[1])  # 获取第 0 号关键点（手腕根部）的坐标
+                    y_2 = int(right_hand_landmarks.landmark[0].y * img.shape[0])
+                    for i in left_hand_landmarks.landmark:
+                        x_ = i.x * w  # 这里乘w, h可以理解为线性变换
+                        y_ = i.y * h
+                        left_finger_points.append((x_, y_))
+                    if left_finger_points:
+                        finger_angle = ggf.hand_angle(left_finger_points)
+                        text = ggf.gesture(finger_angle)
+                        cv2.putText(img, text, (30, 120), fontFace, 5, (255, 255, 255), 10, lineType)
+                    for i in right_hand_landmarks.landmark:
+                        x_ = i.x * w  # 这里乘w, h可以理解为线性变换
+                        y_ = i.y * h
+                        right_finger_points.append((x_, y_))
+                    if right_finger_points:
+                        finger_angle = ggf.hand_angle(right_finger_points)
+                        text = ggf.gesture(finger_angle)
+                        cv2.putText(img, text, (30, 120), fontFace, 5, (255, 255, 255), 10, lineType)
+                    # 显示出左右手
+                    cv2.putText(img, f"{label}", (x_1, y_1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255),
+                                2)
+                    # 將節點和骨架繪製到影像中
+                    mp_drawing.draw_landmarks(
+                        img,
+                        hand_landmarks,
+                        mp_hands.HAND_CONNECTIONS,
+                        mp_drawing_styles.get_default_hand_landmarks_style(),
+                        mp_drawing_styles.get_default_hand_connections_style())
+
+                # 飞船移动
+                wrist = hand_landmarks.landmark[mp_hands.HandLandmark.WRIST]
+                cx = int(wrist.x * w)
+                cy = int(wrist.y * h)
+                if cx > w / 2:
+                    playerCh2.rect.x += playerCh2.speed
+                elif cx < w / 2:
+                    playerCh2.rect.x -= playerCh2.speed
+                if cy > h / 2:
+                    playerCh2.rect.y += playerCh2.speed
+                elif cy < h / 2:
+                    playerCh2.rect.y -= playerCh2.speed
+
+                # # 射击
+                # if ggf.gesture(finger_angle) == 'rock' and label == 'Left':
+                #     player.shoot_left()
+                # if ggf.gesture(finger_angle) == 'rock' and label == 'Right':
+                #     player.shoot_right()
+
+            cv2.imshow('test', img)
+            if cv2.waitKey(5) == ord('q'):
+                break  # 按下 q 鍵停止
+
+            clock.tick(config.FPS)
+            # 特殊反应
+            for event in pg.event.get():
+                # 回到主页
+                if event.type == pg.QUIT:
+                    quit_game = tk.messagebox.askyesno("quit", "是否确认退出游戏，您在游戏中获得的积分将消失!")
+                    if quit_game:
+                        cv2.destroyAllWindows()
+                        running = False
+                    else:
+                        pass
+                # 无敌状态
+                # if event.type == INVINCIBLE_TIME:
+                #     player.invincible = False  # 取消无敌状态
+                #     player.image = game_img.player_img
+                pg.time.set_timer(INVINCIBLE_TIME, 0)  # 取消定时器
+
+            # 更新
+            all_sprites.update()
+
+            # 子弹和陨石碰撞
+            hits = pg.sprite.groupcollide(rocks, bullets, True, True)  # 后面两个参数是判断碰撞后要不要删除;返回值是字典；默认矩形碰撞判断
+            for hit in hits:
+                pg.mixer.Sound.play(random.choice(game_sound.expl_sounds))
+                score += int(hit.radius)
+                expl = Exploration(hit.rect.center, 'big')
+                all_sprites.add(expl)
+                # 掉宝机率
+                if random.random() > 0.85 - odds:
+                    pow = Power(hit.rect.center)
+                    all_sprites.add(pow)
+                    # powers = pg.sprite.Group() 这个地方加上去就在发射时吃不到道具了，因为创建了一个新的精灵模组，飞机只能和最后的发生互动
+                    powers.add(pow)
+                new_rock()
+
+            # 激光碰撞陨石
+            hits = pg.sprite.groupcollide(rocks, lasers, True, False)  # 后面两个参数是判断碰撞后要不要删除;返回值是字典；默认矩形碰撞判断
+            for hit in hits:
+                pg.mixer.Sound.play(random.choice(game_sound.expl_sounds))
+                score += int(hit.radius)
+                expl = Exploration(hit.rect.center, 'big')
+                all_sprites.add(expl)
+                # 掉宝机率
+                if random.random() > 0.85 - odds:
+                    pow = Power(hit.rect.center)
+                    all_sprites.add(pow)
+                    # powers = pg.sprite.Group() 这个地方加上去就在发射时吃不到道具了，因为创建了一个新的精灵模组，飞机只能和最后的发生互动
+                    powers.add(pow)
+                new_rock()
+
+            # 飞机和陨石碰撞
+            hits = pg.sprite.spritecollide(playerCh2, rocks, True, pg.sprite.collide_circle)  # 需要在类中加radius
+            for hit in hits:
+                expl = Exploration(hit.rect.center, 'small')
+                all_sprites.add(expl)
+                if not player.invincible:
+                    health -= int(hit.radius)
+                print(player.health)
+                new_rock()
+                if health <= 0:
+                    death = Death(playerCh2.rect.center)
+                    pg.mixer.Sound.play(game_sound.die_sound)
+                    all_sprites.add(death)
+                    health = playerCh2.health
+                    lives -= 1
+                    # print(playerCh2.lives)
+                    # player.hide()
+            if lives == 0 and not (death.alive()):
+                if tk_login.is_logged_in:
+                    cursor = connect_.cursor()
+                    cursor.execute('use user_info')
+                    sql_in = "UPDATE user_base_info SET score = score + %s WHERE user_name = %s"
+                    cursor.execute(sql_in, (score, tk_login.user_name))
+                    connect_.commit()
+                draw_text(screen, '你失败了', 26, config.WIDTH / 2, 50)
+                draw_text(screen, '按任意键继续', 26, config.WIDTH / 2, 100)
+                pg.mixer.Sound.play(game_sound.die_music)
+                pg.display.update()
+                waiting = True  # 设置一个等待标志
+                while waiting:  # 进入一个等待循环
+                    for event in pg.event.get():
+                        if event.type == pg.KEYUP:  # 如果检测到用户按下任意键
+                            waiting = False  # 结束等待循环
+                            cv2.destroyAllWindows()
+                            return  # 跳出game_main函数
+                        if event.type == pg.QUIT:
+                            cv2.destroyAllWindows()
+                            running = False
+                            return
+
+            # 飞机和宝物碰撞
+            hits = pg.sprite.spritecollide(playerCh2, powers, True)
+            for hit in hits:
+                if hit.type == 'shield':
+                    pg.mixer.Sound.play(game_sound.shield_sound)
+                    health += 10
+                    if health >= playerCh2.health:
+                        health = playerCh2.health
+                # if hit.type == 'gun':
+                #     pg.mixer.Sound.play(game_sound.gun_sound)
+                #     player.gunup()
+                # if hit.type == 'time':
+                #     pg.mixer.Sound.play(game_sound.time_sound)
+                #     player.invincible_time()
+                if hit.type == 'time2':
+                    pg.mixer.Sound.play(game_sound.time_2_sound)
+                    score = int(score) * 2
+
+            back_group.draw(screen)
+            # screen.blit(game_img.background_img, (0, 0))  # 显示背景图片的方法
+            screen.blit(player_image, playerCh2)
+            all_sprites.draw(screen)
+            draw_text(screen, str(score), 18, config.WIDTH / 2, 10)
+            draw_health(screen, health, 10, 10, str(health), 18)
+            if lives <= 3:
+                draw_lives(screen, lives, game_img.player_lives_img, config.WIDTH - 100, 15)
+            else:
+                draw_lives(screen, lives, game_img.player_lives_img, config.WIDTH - 180, 15)
+
+            # 更新画面
+            playerCh2.update()
+            back_group.update()
+            pg.display.update()
 
 
 # 运行
@@ -1041,3 +1075,4 @@ draw_init()
 pg.quit()
 cap.release()
 cv2.destroyAllWindows()
+sys.exit()
