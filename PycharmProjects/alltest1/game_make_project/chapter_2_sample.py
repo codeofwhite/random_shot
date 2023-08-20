@@ -666,7 +666,7 @@ while True:
         score_text = font.render(f"Your Score {score}", True, white)
         game_window.blit(score_text, (window_width / 2 - 200, window_height / 2 - 50))
 
-        # Show restart instructions
+        # Show restart instructions 这段不写
         restart_text = font.render("Press R to restart", True, white)
         game_window.blit(restart_text, (window_width / 2 - 200, window_height / 2))
 

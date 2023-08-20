@@ -1,5 +1,5 @@
 import pymysql
-import tk_ui.tk_login_ui as tk_login
+import tk_ui as tk_login
 import tkinter as tk
 from tkinter import *
 from tkinter import messagebox

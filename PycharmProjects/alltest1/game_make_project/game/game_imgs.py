@@ -114,4 +114,3 @@ power_imgs['time2'] = pg.transform.scale(pg.image.load(
     'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/time2.png'),
     (40, 40))
 
-# chapter_2
