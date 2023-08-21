@@ -1,10 +1,11 @@
+import sys
 import cv2
 import numpy as np
 from ffpyplayer.player import MediaPlayer
 
 
 def PlayVideo():
-    video_path = "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/video/CG_TEST1.mp4"
+    video_path = "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/video/CG_TEST1.avi"
     video = cv2.VideoCapture(video_path)
     player = MediaPlayer(video_path)
     while True:

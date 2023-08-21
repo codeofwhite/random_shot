@@ -19,3 +19,7 @@ gun_sound = pg.mixer.Sound('C:/Users/zhj20/pycharm_projects/PycharmProjects/allt
 shield_sound = pg.mixer.Sound('C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make/sound/pow1.wav')
 time_sound = pg.mixer.Sound('C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/sounds/time_sound.mp3')
 time_2_sound = pg.mixer.Sound('C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/sounds/time2.mp3')
+
+# BOSS音效
+boss_laser_sound = pg.mixer.Sound('C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/sounds/boss_laser_sound.mp3')
+boss_laser_sound.set_volume(0.3)

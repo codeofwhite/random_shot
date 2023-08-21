@@ -929,8 +929,10 @@ class PlayerCh2(pg.sprite.Sprite):
             self.rect.top = 0
 
 
+# player对象
 playerCh2 = PlayerCh2()
 
+# boss 精灵——Rect类型
 boss_sprite = pg.Rect(200, 100, 300, 120)
 
 
@@ -1022,6 +1024,8 @@ def check_boss_collisions():
     for bullet in enemy_bullets:
         if not playerCh2.invisible:
             if bullet.colliderect(playerCh2.rect):
+                expl = Exploration(bullet.center, 'small')
+                ch2_all_sprites.add(expl)
                 enemy_bullets.remove(bullet)
                 playerCh2.health -= 10
                 if playerCh2.health <= 0:
@@ -1042,6 +1046,7 @@ def create_boss_laser():
     laser_x = boss_sprite.centerx - laser_width / 2
     laser_y = boss_sprite.bottom
     laser_sprite = pg.Rect(laser_x, laser_y, laser_width, laser_height)
+    pg.mixer.Sound.play(game_sound.boss_laser_sound)
     boss_lasers.append(laser_sprite)
 
 
@@ -1134,6 +1139,44 @@ def bgm2():
         'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/chapter_2_img/background_music.mp3')
     pg.mixer.music.set_volume(0.5)
     pg.mixer.music.play(-1)
+
+
+def create_level():
+    global level, enemy_speed, enemy_fire_delay, enemy_spawn_delay, enemies_spawned, enemies_to_spawn, enemy_bullet_speed
+    level += 1
+    enemy_speed += 2
+    enemy_fire_delay -= 10
+    enemy_spawn_delay = 50
+    enemies_spawned = 0
+    enemies_to_spawn += 10
+    enemy_bullet_speed += 2
+
+
+def create_level_2():
+    global boss_image
+    boss_image = pg.image.load(
+        "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/boss_level_2-removebg-preview.png")
+    boss_image = pg.transform.scale(boss_image, (230, 230))
+
+
+def create_level_3():
+    pass
+
+
+def update_game_ch2():
+    ch2_all_sprites.update()
+    update_enemies()
+    update_enemy_bullets()
+    check_boss_collisions()
+    back_group.update()
+    playerCh2.update()
+    update_boss()
+    if (level == 1) and (enemies_spawned > 50):
+        create_level()
+    if (level == 2) and (enemies_spawned > 50):
+        create_level_2()
+    if (level == 3) and (enemies_spawned > 75):
+        pass
 
 
 def chapter2():
@@ -1270,7 +1313,9 @@ def chapter2():
             if background_position[1] > 0:
                 background_position[1] -= 1600
             game_window.blit(background_surface, background_position)
-            draw_text(game_window, str(score), 18, config.WIDTH / 2, 10)
+            draw_text(game_window, "score:" + str(score), 24, config.WIDTH / 2 + 100, 10)
+            level_text = font.render("Level: " + str(level), True, white)
+            game_window.blit(level_text, (WINDOWWIDTH / 2 - 50, 10))
             draw_health(game_window, health, 10, 10, str(health), 18, config.RED)
             for bullet in enemy_bullets:
                 # pygame.draw.rect(game_window, red, bullet)
@@ -1292,26 +1337,21 @@ def chapter2():
                 enemies_spawned += 1
 
             # 更新画面
-            ch2_all_sprites.update()
             ch2_all_sprites.draw(game_window)
-            update_enemies()
-            update_enemy_bullets()
             check_boss_collisions()
-            back_group.update()
-            playerCh2.update()
             if flag_:
                 create_boss()
                 flag_ = False
-            update_boss()
             draw_game()
             game_window.blit(player_image, playerCh2)
+            update_game_ch2()
             pg.display.update()
             clock.tick(config.FPS)
 
 
 # 运行
-draw_init()
-# chapter2()
+# draw_init()
+chapter2()
 
 # 退出
 pg.quit()
