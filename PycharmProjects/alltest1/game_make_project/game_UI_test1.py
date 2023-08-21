@@ -6,6 +6,7 @@ import cv2
 import mediapipe as mp
 import pygame as pg
 import random
+import CG
 
 from cv2 import VideoCapture
 
@@ -37,6 +38,14 @@ mp_hands = mp.solutions.hands  # mediapipe 偵測手掌方法
 
 #  无敌时间（都可以用）间隔参数
 INVINCIBLE_TIME = pg.USEREVENT + 2
+
+
+def bgm1():
+    # 背景音乐
+    pg.mixer.music.load(
+        'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make/sound/background.ogg')  # 这个会重复播放
+    pg.mixer.music.set_volume(0.3)
+    pg.mixer.music.play(-1)
 
 
 # 玩家
@@ -288,7 +297,6 @@ for i in range(20):
     rock = Rock()
     rocks.add(rock)
     all_sprites.add(rock)
-pg.mixer.music.play(-1)
 score = 0
 
 
@@ -303,15 +311,19 @@ def draw_text(surf, text, size, x, y):
 
 
 # 显示生命值
-def draw_health(surf, hp, x, y, text, size):
+def draw_health(surf, hp, x, y, text, size, color):
+    high = 20
     if hp <= 0:
         hp = 0
+    if hp >= 500:
+        hp = hp / 2
+        high = 30
     BAR_LENGTH = hp
-    BAR_HEIGHT = 20
+    BAR_HEIGHT = high
     fill = hp
     outline_rect = pg.Rect(x, y, BAR_LENGTH, BAR_HEIGHT)
     fill_rect = pg.Rect(x, y, fill, BAR_HEIGHT)
-    pg.draw.rect(surf, config.RED, fill_rect)  # 血条
+    pg.draw.rect(surf, color, fill_rect)  # 血条
     pg.draw.rect(surf, config.WHITE, outline_rect, 2)  # 血条外框
     font = pg.font.Font(game_img.font_name, size)
     text_surface = font.render(text, True, config.WHITE)
@@ -340,9 +352,16 @@ def new_rock():
 font = pg.font.Font("C:/Windows/Fonts/s8514fix.fon", 32)  # 加载字体
 font_zh = pg.font.Font('C:/Windows/Fonts/msyhbd.ttc', 20)
 
+playCG = False
+
 
 # 游戏主界面初始化
 def draw_init():
+    bgm1()
+    global playCG
+    if not playCG:
+        CG.PlayVideo()
+        playCG = True
     click = False
     while True:
         screen.blit(game_img.init_bg_img, (-100, -250))
@@ -439,11 +458,11 @@ def game_main():
     with mp_hands.Hands(model_complexity=0, max_num_hands=1, min_detection_confidence=0.55, static_image_mode=False,
                         min_tracking_confidence=0.55) as hands:
         if not cap.isOpened():
-            print("Cannot open camera")
+            tk.messagebox.showerror("警告", "打开摄像头失败")
             exit()
 
         running = True
-        w, h = 600, 350  # 图像的尺寸
+        w, h = 600, 400  # 摄像头图像的尺寸
 
         while cap.isOpened() and running:
             ret, img = cap.read()
@@ -508,10 +527,21 @@ def game_main():
                     player.rect.y -= player.speed
 
                 # 射击
-                if ggf.gesture(finger_angle) == 'rock' and label == 'Left':
-                    player.shoot_left()
-                if ggf.gesture(finger_angle) == 'rock' and label == 'Right':
-                    player.shoot_right()
+                if player.image != game_img.player_img_min:
+                    if ggf.gesture(finger_angle) == 'rock' and label == 'Left':
+                        player.shoot_left()
+                    if ggf.gesture(finger_angle) == 'rock' and label == 'Right':
+                        player.shoot_right()
+
+                # 缩小,还原
+                if ggf.gesture(finger_angle) == 'scissor' and label == 'Left':
+                    player.image = game_img.player_img_min
+                elif ggf.gesture(finger_angle) == 'paper' and label == 'Left':
+                    player.image = game_img.player_img
+                if ggf.gesture(finger_angle) == 'scissor' and label == 'Right':
+                    player.image = game_img.player_img_min
+                elif ggf.gesture(finger_angle) == 'paper' and label == 'Right':
+                    player.image = game_img.player_img
 
             cv2.imshow('test', img)
             if cv2.waitKey(5) == ord('q'):
@@ -636,7 +666,7 @@ def game_main():
             # screen.blit(game_img.background_img, (0, 0))  # 显示背景图片的方法
             all_sprites.draw(screen)
             draw_text(screen, str(score), 18, config.WIDTH / 2, 10)
-            draw_health(screen, health, 10, 10, str(health), 18)
+            draw_health(screen, health, 10, 10, str(health), 18, config.RED)
             if lives <= 3:
                 draw_lives(screen, lives, game_img.player_lives_img, config.WIDTH - 100, 15)
             else:
@@ -821,12 +851,8 @@ enemy_bullet_image = pg.image.load(
 enemy_bullet_image = pg.transform.scale(enemy_bullet_image, (40, 40))
 laser_image = pg.image.load(
     "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/chapter_2_img/game_sprite/laser.png")
-
-# 音乐
-pg.mixer.music.load(
-    'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/chapter_2_img/background_music.mp3')
-pg.mixer.music.set_volume(0.5)
-pg.mixer.music.play(-1)
+enemy_image = pg.image.load(
+    "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/chapter_2_img/game_sprite/enemy.png")
 
 # Define game colors
 white = (255, 255, 255)
@@ -873,6 +899,9 @@ enemy_bullets = []
 boss_lasers = []
 items = []
 
+# 完全组
+ch2_all_sprites = pg.sprite.Group()
+
 
 class PlayerCh2(pg.sprite.Sprite):
     def __init__(self):
@@ -905,12 +934,62 @@ playerCh2 = PlayerCh2()
 boss_sprite = pg.Rect(200, 100, 300, 120)
 
 
-# def create_enemy_bullet(enemy):
-#     # Create a new enemy bullet sprite
-#     bullet_x = enemy.centerx - bullet_width / 2
-#     bullet_y = enemy.bottom
-#     bullet_sprite = pg.Rect(bullet_x, bullet_y, bullet_width, bullet_height)
-#     enemy_bullets.append(bullet_sprite)
+def create_enemy():
+    # Create a new enemy sprite
+    enemy_x = random.randint(0, WINDOWWIDTH - enemy_width)
+    enemy_y = 0 - enemy_height
+    enemy_sprite = pg.Rect(enemy_x, enemy_y, enemy_width, enemy_height)
+    enemies.append(enemy_sprite)
+    # print("Enemy spawned, total enemies: ", len(enemies))
+
+
+def create_enemy_bullet(enemy):
+    # Create a new enemy bullet sprite
+    bullet_x = enemy.centerx - bullet_width / 2
+    bullet_y = enemy.bottom
+    bullet_sprite = pg.Rect(bullet_x, bullet_y, bullet_width, bullet_height)
+    enemy_bullets.append(bullet_sprite)
+
+
+def update_enemies():
+    # Move and remove enemies that have gone offscreen
+    global game_over
+    for enemy in enemies:
+        enemy.move_ip(0, enemy_speed)
+        if enemy.top > WINDOWHEIGHT:
+            enemies.remove(enemy)
+            # global player_lives
+            # player_lives -= 1
+            # if player_lives == 0:
+            #     global game_over
+            #     game_over = True
+            # else:
+            #     # Make the player briefly invisible if they have just lost a life
+            #     global player_invisible, player_invisible_delay
+            #     player_invisible = True
+            #     player_invisible_delay = 120
+            # player_sprite.bottom = -100
+
+        # Randomly fire bullets
+        global enemy_fire_delay
+        enemy_fire_delay -= 1
+        if enemy_fire_delay == 0 and not enemy.colliderect(playerCh2.rect):
+            create_enemy_bullet(enemy)
+            enemy_fire_delay = 60
+        if not playerCh2.invisible:
+            if playerCh2.rect.colliderect(enemy):
+                pg.mixer.Sound.play(random.choice(game_sound.expl_sounds))
+                expl = Exploration(enemy.center, 'small')
+                ch2_all_sprites.add(expl)
+                enemies.remove(enemy)
+                if playerCh2.lives == 0:
+                    game_over = True
+                else:
+                    pass
+                    # Make the player briefly invisible if they have just lost a life
+                    # playerCh2.invisible = True
+                    # playerCh2.player_invisible_delay = playerCh2.player_invisible_delay_time
+                # player_sprite.bottom = -100
 
 
 def update_enemy_bullets():
@@ -1042,11 +1121,25 @@ flag = False
 def draw_game():
     font = pg.font.Font(None, 36)
     boss_health_text = font.render("Boss Health: " + str(boss_health), True, config.WHITE)
-    game_window.blit(boss_health_text, (WINDOWWIDTH / 2 - 70, 50))
+    draw_health(game_window, boss_health, 150, 40, str(boss_health), 24, blue)
+    # game_window.blit(boss_health_text, (WINDOWWIDTH / 2 - 70, 50))
     game_window.blit(boss_image, boss_sprite)
+    for enemy in enemies:
+        game_window.blit(enemy_image, enemy)
+
+
+def bgm2():
+    # 音乐
+    pg.mixer.music.load(
+        'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/chapter_2_img/background_music.mp3')
+    pg.mixer.music.set_volume(0.5)
+    pg.mixer.music.play(-1)
 
 
 def chapter2():
+    # 背景音乐
+    bgm2()
+    global enemies_spawned, enemies_to_spawn, level, enemy_spawn_delay, background_speed
     playerCh2.lives = 3
     playerCh2.health = 100
     flag_ = True
@@ -1069,13 +1162,13 @@ def chapter2():
     with mp_hands.Hands(model_complexity=0, max_num_hands=1, min_detection_confidence=0.55, static_image_mode=False,
                         min_tracking_confidence=0.55) as hands:
         if not cap.isOpened():
-            print("Cannot open camera")
+            tk.messagebox.showerror("警告", "打开摄像头失败")
             exit()
 
         run = True  # 設定是否更動觸碰區位置
         running = True
         show_init = True
-        w, h = 600, 350  # 图像的尺寸
+        w, h = 600, 400  # 图像的尺寸
 
         while cap.isOpened() and running:
             health = playerCh2.health
@@ -1161,7 +1254,9 @@ def chapter2():
                 if event.type == pg.QUIT:
                     quit_game = tk.messagebox.askyesno("quit", "是否确认退出游戏，您在游戏中获得的积分将消失!")
                     if quit_game:
+                        pg.mixer.music.stop()
                         cv2.destroyAllWindows()
+                        bgm1()
                         running = False
                     else:
                         pass
@@ -1176,7 +1271,7 @@ def chapter2():
                 background_position[1] -= 1600
             game_window.blit(background_surface, background_position)
             draw_text(game_window, str(score), 18, config.WIDTH / 2, 10)
-            draw_health(game_window, health, 10, 10, str(health), 18)
+            draw_health(game_window, health, 10, 10, str(health), 18, config.RED)
             for bullet in enemy_bullets:
                 # pygame.draw.rect(game_window, red, bullet)
                 game_window.blit(enemy_bullet_image, bullet)
@@ -1187,7 +1282,19 @@ def chapter2():
             else:
                 draw_lives(game_window, lives, game_img.player_lives_img, config.WIDTH - 180, 15)
 
+            enemy_spawn_delay -= 1
+            if (enemy_spawn_delay == 0):
+                create_enemy()
+                if level == 2:
+                    enemy_spawn_delay = 50
+                else:
+                    enemy_spawn_delay = 60
+                enemies_spawned += 1
+
             # 更新画面
+            ch2_all_sprites.update()
+            ch2_all_sprites.draw(game_window)
+            update_enemies()
             update_enemy_bullets()
             check_boss_collisions()
             back_group.update()
@@ -1204,6 +1311,7 @@ def chapter2():
 
 # 运行
 draw_init()
+# chapter2()
 
 # 退出
 pg.quit()

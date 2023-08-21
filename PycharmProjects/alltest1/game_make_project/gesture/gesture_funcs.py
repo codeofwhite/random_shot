@@ -65,6 +65,8 @@ def gesture(finger_angle):
     if f1 >= 50 and f2 >= 50 and f3 >= 50 and f4 >= 50 and f5 >= 50:
         return "rock"
     elif f1 >= 50 and f2 < 50 and f3 < 50 and f4 >= 50 and f5 >= 50:
-        return "scissors"
+        return "scissor"
     elif f1 < 50 and f2 < 50 and f3 < 50 and f4 < 50 and f5 < 50:
         return "paper"
+    elif f1 >= 50 and f2 < 50 and f3 >= 50 and f4 >= 50 and f5 >= 50:
+        return "one"

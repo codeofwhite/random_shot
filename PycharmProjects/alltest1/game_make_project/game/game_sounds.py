@@ -10,9 +10,6 @@ laser_sound = pg.mixer.Sound(
 expl_sounds = []
 for i in range(2):
     expl_sounds.append(pg.mixer.Sound(f'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make/sound/expl{i}.wav'))
-# 背景音乐
-BGM = pg.mixer.music.load('C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make/sound/background.ogg')  # 这个会重复播放，且唯一？
-pg.mixer.music.set_volume(0.3)
 # 死亡音效和音乐
 die_sound = pg.mixer.Sound('C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make/sound/rumble.ogg')
 die_music = pg.mixer.Sound(

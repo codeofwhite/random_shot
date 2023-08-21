@@ -35,6 +35,8 @@ player_img = pg.image.load(
     'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make/img/player.png').convert()
 player_img.set_colorkey(BLACK)
 player_img = pg.transform.scale(player_img, (50, 38))
+# 缩小飞机
+player_img_min = pg.transform.scale(player_img, (25, 19))
 chapter2_player_img = pg.image.load(
     "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/chapter2_player_img_99x99.png")
 chapter2_player_img.set_colorkey(BLACK)
@@ -113,4 +115,3 @@ power_imgs['time'] = pg.transform.scale(pg.image.load(
 power_imgs['time2'] = pg.transform.scale(pg.image.load(
     'C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/time2.png'),
     (40, 40))
-
