@@ -70,3 +70,5 @@ def gesture(finger_angle):
         return "paper"
     elif f1 >= 50 and f2 < 50 and f3 >= 50 and f4 >= 50 and f5 >= 50:
         return "one"
+    elif f1 < 50 and f2 >= 50 and f3 >= 50 and f4 >= 50 and f5 >= 50:
+        return "good"
