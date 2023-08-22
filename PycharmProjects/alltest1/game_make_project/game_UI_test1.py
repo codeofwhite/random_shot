@@ -1050,7 +1050,7 @@ def update_enemies():
 
 # 玩家有被打，飞机普通子弹打玩家
 def check_collisions():
-    global ch2_score
+    global ch2_score, game_over
     # Check for collisions between player bullets and enemies
     for bullet in player_bullets:
         for enemy in enemies:
@@ -1074,7 +1074,6 @@ def check_collisions():
                 #     items.append((item_sprite, "bomb"))
 
             # Check for collisions between player and enemy bullets
-    global game_over
     if not playerCh2.invisible:
         for bullet in enemy_bullets:
             if bullet.colliderect(playerCh2.rect):
@@ -1090,6 +1089,13 @@ def check_collisions():
                     # player_invisible_delay = player_invisible_delay_time
                     # # player_sprite.bottom = -100
                 if playerCh2.lives == 0:
+                    if tk_login.is_logged_in:
+                        print(ch2_score)
+                        cursor = connect_.cursor()
+                        cursor.execute('use user_info')
+                        sql_in = "UPDATE user_base_info SET score = score + %s WHERE user_name = %s"
+                        cursor.execute(sql_in, (ch2_score, tk_login.user_name))
+                        connect_.commit()
                     game_over = True
 
 
@@ -1143,6 +1149,13 @@ def check_boss_collisions():
                     # playerCh2.player_flash_delay = playerCh2.player_invisible_delay_time
                     # player_sprite.bottom = -100
                 if playerCh2.lives == 0:
+                    if tk_login.is_logged_in:
+                        print(ch2_score)
+                        cursor = connect_.cursor()
+                        cursor.execute('use user_info')
+                        sql_in = "UPDATE user_base_info SET score = score + %s WHERE user_name = %s"
+                        cursor.execute(sql_in, (ch2_score, tk_login.user_name))
+                        connect_.commit()
                     game_over = True
 
 
@@ -1159,7 +1172,7 @@ def create_boss_laser():
 
 # 玩家被打
 def update_boss():
-    global boss_sprite, boss_health, boss_attack_delay, boss_bullet_speed, game_over
+    global boss_sprite, boss_health, boss_attack_delay, boss_bullet_speed, game_over, ch2_score
     if boss_health > 0:
         # Move the boss around randomly
         boss_sprite.move_ip(random.randint(-12, 13), random.randint(-13, 12))
@@ -1208,6 +1221,13 @@ def update_boss():
                 # playerCh2.player_flash_delay = playerCh2.player_invisible_delay_time
                 # player_sprite.bottom = -100
             if playerCh2.lives == 0:
+                if tk_login.is_logged_in:
+                    print(ch2_score)
+                    cursor = connect_.cursor()
+                    cursor.execute('use user_info')
+                    sql_in = "UPDATE user_base_info SET score = score + %s WHERE user_name = %s"
+                    cursor.execute(sql_in, (ch2_score, tk_login.user_name))
+                    connect_.commit()
                 game_over = True
 
     for laser in boss_lasers:
@@ -1228,6 +1248,13 @@ def update_boss():
                     # playerCh2.invisible = True
                     # playerCh2.player_invisible_delay = playerCh2.player_invisible_delay_time
                 if playerCh2.lives == 0:
+                    if tk_login.is_logged_in:
+                        print(ch2_score)
+                        cursor = connect_.cursor()
+                        cursor.execute('use user_info')
+                        sql_in = "UPDATE user_base_info SET score = score + %s WHERE user_name = %s"
+                        cursor.execute(sql_in, (ch2_score, tk_login.user_name))
+                        connect_.commit()
                     game_over = True
 
         if laser.bottom < 0:
@@ -1286,8 +1313,14 @@ def update_game_ch2():
         create_level_2()
     if (level == 3) and (enemies_spawned > 25):
         pass
-    global game_over, boss_image
+    global game_over, boss_image, ch2_score
     if boss_health <= 0:
+        if tk_login.is_logged_in:
+            cursor = connect_.cursor()
+            cursor.execute('use user_info')
+            sql_in = "UPDATE user_base_info SET score = score + %s WHERE user_name = %s"
+            cursor.execute(sql_in, (ch2_score, tk_login.user_name))
+            connect_.commit()
         boss_image = pg.image.load(
             "C:/Users/zhj20/pycharm_projects/PycharmProjects/alltest1/game_make_project/imgs/boss_died-removebg-preview.png")
         boss_image = pg.transform.scale(boss_image, (250, 250))
@@ -1533,8 +1566,8 @@ def chapter2():
 
 
 # 运行
-# draw_init()
-chapter2()
+draw_init()
+# chapter2()
 
 # 退出
 pg.quit()
